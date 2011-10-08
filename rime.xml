@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- filename: rime.xml -->
+<component>
+	<name>com.googlecode.rimeime.Rime</name>
+	<description>Rime Component</description>
+	<exec>/usr/lib/ibus-rime/ibus-engine-rime --ibus</exec>
+	<version>1.0</version>
+	<author>GONG Chen &lt;chen.sst@gmail.com&gt;</author>
+	<license>GPL</license>
+	<homepage>http://code.google.com/p/rimeime/</homepage>
+	<textdomain>ibus-rime</textdomain>
+	<engines>
+		<engine>
+			<name>rime</name>
+			<language>zh</language>
+			<license>GPL</license>
+			<author>GONG Chen &lt;chen.sst@gmail.com&gt;</author>
+			<icon>/usr/share/ibus-rime/icons/zhung.png</icon>
+			<layout>us</layout>
+			<longname>Rime</longname>
+			<description>Rime Input Method Engine</description>
+			<rank>0</rank>
+		</engine>
+	</engines>
+</component>
