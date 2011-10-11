@@ -130,6 +130,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
       ibus_lookup_table_append_candidate(rime->table,
                                          ibus_text_new_from_string(context.menu.candidates[i]));
     }
+    ibus_lookup_table_set_cursor_pos(rime->table, context.menu.highlighted_candidate_index);
     ibus_engine_update_lookup_table((IBusEngine *)rime, rime->table, TRUE);
   }
   else {
