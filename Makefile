@@ -13,7 +13,6 @@ install: ibus-engine-rime
 	mkdir -p $(libexecdir)/ibus-rime
 	cp -f ibus-engine-rime $(libexecdir)/ibus-rime/
 	mkdir -p $(sharedir)/ibus-rime
-	cp -f data/* $(sharedir)/ibus-rime/
 	mkdir -p $(sharedir)/ibus-rime/icons
 	cp -f zhung.png $(sharedir)/ibus-rime/icons/
 
