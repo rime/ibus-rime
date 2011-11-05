@@ -6,7 +6,7 @@ all: ibus-engine-rime
 	@echo ':)'
 
 ibus-engine-rime: $(src)
-	g++ -o ibus-engine-rime $(src) `pkg-config --cflags --libs ibus-1.0` -I../librime/include -L../librime/build/lib -lrime -lyaml-cpp -lboost_filesystem -lboost_signals -lboost_system
+	g++ -o ibus-engine-rime $(src) `pkg-config --cflags --libs ibus-1.0` -I../librime/include -L../librime/build/lib -lrime -lyaml-cpp -lkyotocabinet -lboost_filesystem -lboost_signals -lboost_system
 
 install: ibus-engine-rime
 	cp rime.xml $(sharedir)/ibus/component/
