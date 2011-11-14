@@ -1,5 +1,3 @@
-set(CMAKE_USER_MAKE_RULES_OVERRIDE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/c_flag_overrides.cmake)
-
 project(ibus-rime)
 cmake_minimum_required(VERSION 2.8)
 
@@ -40,5 +38,5 @@ link_directories(${PROJECT_SOURCE_DIR}/../librime/build/lib)
 
 aux_source_directory(. IBUS_RIME_SRC)
 add_executable(ibus-engine-rime ${IBUS_RIME_SRC})
-target_link_libraries(ibus-engine-rime rime
+target_link_libraries(ibus-engine-rime rime stdc++
   ${IBus_LIBRARIES} ${Boost_LIBRARIES} ${YamlCpp_LIBRARY} ${KyotoCabinet_LIBRARY})

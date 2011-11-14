@@ -1,11 +1,13 @@
-src = rime_main.cc rime_engine.cc
 sharedir = /usr/share
 libexecdir = /usr/lib
 
 all: ibus-engine-rime
 	@echo ':)'
 
-ibus-engine-rime: $(src)
+librime:
+	(cd ../librime; ./build.sh)
+
+ibus-engine-rime: librime
 	if [ ! -e cmake ]; then ln -s ../librime/cmake; fi
 	mkdir -p build
 	(cd build; cmake .. && 	make)

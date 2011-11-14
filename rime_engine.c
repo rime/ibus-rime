@@ -126,7 +126,8 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
 
   ibus_lookup_table_clear(rime->table);
   if (context.menu.num_candidates) {
-    for (int i = 0; i < context.menu.num_candidates; ++i) {
+    int i;
+    for (i = 0; i < context.menu.num_candidates; ++i) {
       ibus_lookup_table_append_candidate(rime->table,
                                          ibus_text_new_from_string(context.menu.candidates[i]));
     }

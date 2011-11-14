@@ -66,7 +66,7 @@ static void rime_with_ibus() {
 
 static void sigterm_cb(int sig) {
   RimeFinalize();
-  ::exit(EXIT_FAILURE);
+  exit(EXIT_FAILURE);
 }
 
 static void atexit_cb() {
@@ -74,8 +74,8 @@ static void atexit_cb() {
 }
 
 int main(gint argc, gchar** argv) {
-  ::signal(SIGTERM, sigterm_cb);
-  ::signal(SIGINT, sigterm_cb);
+  signal(SIGTERM, sigterm_cb);
+  signal(SIGINT, sigterm_cb);
   g_atexit(atexit_cb);
 
   rime_with_ibus();
