@@ -12,7 +12,7 @@ ibus-engine-rime: librime
 	mkdir -p build
 	(cd build; cmake .. && 	make)
 
-install: ibus-engine-rime
+install:
 	cp rime.xml $(sharedir)/ibus/component/
 	mkdir -p $(libexecdir)/ibus-rime
 	cp -f build/ibus-engine-rime $(libexecdir)/ibus-rime/
