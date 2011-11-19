@@ -97,6 +97,11 @@ ibus_rime_engine_destroy (IBusRimeEngine *rime)
 
 static void ibus_rime_engine_update(IBusRimeEngine *rime)
 {
+  const int GLOW = 0xffffff;
+  const int LUNA = 0xffff7f;
+  const int DARK_INK = 0x0f1f2f;
+  const int LIGHT_INK = 0x0f3fff;
+
   RimeContext context;
   if (!RimeGetContext(rime->session_id, &context) ||
       !context.composition.is_composing) {
@@ -107,16 +112,28 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
 
   IBusText *text = ibus_text_new_from_static_string(context.composition.preedit);
   glong preedit_len = g_utf8_strlen(context.composition.preedit, -1);
+  glong cursor_pos = g_utf8_strlen(context.composition.preedit, context.composition.cursor_pos);
   text->attrs = ibus_attr_list_new();
+  // TODO: firefox is color blind :-(
+  //ibus_attr_list_append(text->attrs,
+  //                      ibus_attr_foreground_new(GLOW, 0, preedit_len));
   ibus_attr_list_append(text->attrs,
-                        ibus_attr_underline_new(IBUS_ATTR_UNDERLINE_SINGLE, 0, preedit_len));
+                        ibus_attr_underline_new(IBUS_ATTR_UNDERLINE_SINGLE, 0, cursor_pos));
   if (context.composition.sel_start < context.composition.sel_end) {
     glong start = g_utf8_strlen(context.composition.preedit, context.composition.sel_start);
     glong end = g_utf8_strlen(context.composition.preedit, context.composition.sel_end);
+    //ibus_attr_list_append(text->attrs,
+    //                      ibus_attr_background_new(DARK_INK, 0, start));
     ibus_attr_list_append(text->attrs,
-                          ibus_attr_foreground_new(0x000000, start, end));
+                          ibus_attr_foreground_new(GLOW, start, end));
     ibus_attr_list_append(text->attrs,
-                          ibus_attr_background_new(0xffff7f, start, end));
+                          ibus_attr_background_new(LIGHT_INK, start, end));
+    //ibus_attr_list_append(text->attrs,
+    //                      ibus_attr_background_new(DARK_INK, end, preedit_len));
+  }
+  else {
+    //ibus_attr_list_append(text->attrs,
+    //                      ibus_attr_background_new(DARK_INK, 0, preedit_len));
   }
 
   ibus_engine_update_preedit_text((IBusEngine *)rime,
