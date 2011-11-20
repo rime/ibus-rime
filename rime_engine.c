@@ -138,7 +138,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
 
   ibus_engine_update_preedit_text((IBusEngine *)rime,
                                   text,
-                                  context.composition.cursor_pos,
+                                  cursor_pos,
                                   TRUE);
 
   ibus_lookup_table_clear(rime->table);
