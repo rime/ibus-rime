@@ -33,10 +33,15 @@ if(KyotoCabinet_FOUND)
   include_directories(${KyotoCabinet_INCLUDE_DIR})
 endif(KyotoCabinet_FOUND)
 
+find_package(Opencc REQUIRED)
+if(Opencc_FOUND)
+  include_directories(${Opencc_INCLUDE_DIR})
+endif(Opencc_FOUND)
+
 include_directories(${PROJECT_SOURCE_DIR}/../librime/include)
 link_directories(${PROJECT_SOURCE_DIR}/../librime/build/lib)
 
 aux_source_directory(. IBUS_RIME_SRC)
 add_executable(ibus-engine-rime ${IBUS_RIME_SRC})
 target_link_libraries(ibus-engine-rime rime stdc++
-  ${IBus_LIBRARIES} ${Boost_LIBRARIES} ${YamlCpp_LIBRARY} ${KyotoCabinet_LIBRARY})
+  ${IBus_LIBRARIES} ${Boost_LIBRARIES} ${YamlCpp_LIBRARY} ${KyotoCabinet_LIBRARY} ${Opencc_LIBRARY})
