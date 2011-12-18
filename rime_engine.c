@@ -174,11 +174,7 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
 {
   IBusRimeEngine *rime = (IBusRimeEngine *)engine;
 
-  /* TODO: */
-  if (modifiers & IBUS_RELEASE_MASK)
-    return FALSE;
-
-  modifiers &= (IBUS_CONTROL_MASK | IBUS_MOD1_MASK);
+  modifiers &= (IBUS_RELEASE_MASK | IBUS_CONTROL_MASK | IBUS_MOD1_MASK);
 
   if (!RimeFindSession(rime->session_id)) {
     rime->session_id = RimeCreateSession();
