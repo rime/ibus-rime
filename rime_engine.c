@@ -104,7 +104,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
 
   RimeContext context;
   if (!RimeGetContext(rime->session_id, &context) ||
-      !context.composition.is_composing) {
+      context.composition.length == 0) {
     ibus_engine_hide_preedit_text((IBusEngine *)rime);
     ibus_engine_hide_lookup_table((IBusEngine *)rime);
     return;
