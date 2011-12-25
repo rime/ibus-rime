@@ -1,7 +1,7 @@
 sharedir = /usr/share
 libexecdir = /usr/lib
 
-all: ibus-engine-rime
+all: ibus-engine-rime ibus-rime-data
 	@echo ':)'
 
 librime:
@@ -11,6 +11,13 @@ ibus-engine-rime: librime
 	if [ ! -e cmake ]; then ln -s ../librime/cmake; fi
 	mkdir -p build
 	(cd build; cmake .. && 	make)
+
+ibus-rime-data:
+	mkdir -p data
+	cp ../librime/data/default.yaml data/
+	cp ../librime/data/essay.kct data/
+	cp ../librime/data/samples/*.schema.yaml data/
+	cp ../librime/data/samples/*.dict.yaml data/
 
 install:
 	cp rime.xml $(sharedir)/ibus/component/
