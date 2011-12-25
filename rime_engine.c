@@ -179,11 +179,7 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
   if (!RimeFindSession(rime->session_id)) {
     rime->session_id = RimeCreateSession();
   }
-  if (RimeProcessKey(rime->session_id, keyval, modifiers)) {
-    ibus_rime_engine_commit_and_update(rime);
-    return TRUE;
-  }
-
-  ibus_rime_engine_update(rime);
-  return FALSE;
+  gboolean result = RimeProcessKey(rime->session_id, keyval, modifiers);
+  ibus_rime_engine_commit_and_update(rime);
+  return result;
 }
