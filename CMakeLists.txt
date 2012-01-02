@@ -15,7 +15,7 @@ endif(IBus_FOUND)
 
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
-find_package(Boost 1.40.0 REQUIRED COMPONENTS filesystem signals system)
+find_package(Boost 1.40.0 REQUIRED COMPONENTS filesystem regex signals system)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
