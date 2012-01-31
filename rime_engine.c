@@ -75,8 +75,8 @@ ibus_rime_engine_init (IBusRimeEngine *rime)
 {
   rime->session_id = RimeCreateSession();
 
-  rime->table = ibus_lookup_table_new (9, 0, TRUE, TRUE);
-  g_object_ref_sink (rime->table);
+  rime->table = ibus_lookup_table_new(9, 0, TRUE, FALSE);
+  g_object_ref_sink(rime->table);
 }
 
 static void
@@ -88,24 +88,25 @@ ibus_rime_engine_destroy (IBusRimeEngine *rime)
   }
 
   if (rime->table) {
-    g_object_unref (rime->table);
+    g_object_unref(rime->table);
     rime->table = NULL;
   }
 
-  ((IBusObjectClass *) ibus_rime_engine_parent_class)->destroy ((IBusObject *)rime);
+  ((IBusObjectClass *) ibus_rime_engine_parent_class)->destroy((IBusObject *)rime);
 }
 
 static void ibus_rime_engine_update(IBusRimeEngine *rime)
 {
   const int GLOW = 0xffffff;
+  const int BLACK = 0x000000;
   const int LUNA = 0xffff7f;
-  const int DARK_INK = 0x0f1f2f;
-  const int LIGHT_INK = 0x0f3fff;
+  const int DARK = 0xd4d4d4;
+  const int HIGHLIGHT = 0x0a3dfa;
 
   RimeContext context;
   if (!RimeGetContext(rime->session_id, &context) ||
       context.composition.length == 0) {
-    ibus_engine_hide_preedit_text((IBusEngine *)rime);
+    ibus_engine_hide_auxiliary_text((IBusEngine *)rime);
     ibus_engine_hide_lookup_table((IBusEngine *)rime);
     return;
   }
@@ -114,39 +115,26 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
   glong preedit_len = g_utf8_strlen(context.composition.preedit, -1);
   glong cursor_pos = g_utf8_strlen(context.composition.preedit, context.composition.cursor_pos);
   text->attrs = ibus_attr_list_new();
-  // TODO: firefox is color blind :-(
   //ibus_attr_list_append(text->attrs,
-  //                      ibus_attr_foreground_new(GLOW, 0, preedit_len));
-  ibus_attr_list_append(text->attrs,
-                        ibus_attr_underline_new(IBUS_ATTR_UNDERLINE_SINGLE, 0, cursor_pos));
+  //                      ibus_attr_underline_new(IBUS_ATTR_UNDERLINE_SINGLE, 0, cursor_pos));
   if (context.composition.sel_start < context.composition.sel_end) {
     glong start = g_utf8_strlen(context.composition.preedit, context.composition.sel_start);
     glong end = g_utf8_strlen(context.composition.preedit, context.composition.sel_end);
-    //ibus_attr_list_append(text->attrs,
-    //                      ibus_attr_background_new(DARK_INK, 0, start));
     ibus_attr_list_append(text->attrs,
-                          ibus_attr_foreground_new(GLOW, start, end));
+                          ibus_attr_foreground_new(BLACK, start, end));
     ibus_attr_list_append(text->attrs,
-                          ibus_attr_background_new(LIGHT_INK, start, end));
-    //ibus_attr_list_append(text->attrs,
-    //                      ibus_attr_background_new(DARK_INK, end, preedit_len));
+                          ibus_attr_background_new(DARK, start, end));
   }
-  else {
-    //ibus_attr_list_append(text->attrs,
-    //                      ibus_attr_background_new(DARK_INK, 0, preedit_len));
-  }
-
-  ibus_engine_update_preedit_text((IBusEngine *)rime,
-                                  text,
-                                  cursor_pos,
-                                  TRUE);
+  ibus_engine_update_auxiliary_text((IBusEngine *)rime,
+                                    text,
+                                    TRUE);
 
   ibus_lookup_table_clear(rime->table);
   if (context.menu.num_candidates) {
     int i;
     for (i = 0; i < context.menu.num_candidates; ++i) {
-      ibus_lookup_table_append_candidate(rime->table,
-                                         ibus_text_new_from_string(context.menu.candidates[i]));
+      IBusText *cand_text = ibus_text_new_from_static_string(context.menu.candidates[i]);
+      ibus_lookup_table_append_candidate(rime->table, cand_text);
     }
     ibus_lookup_table_set_cursor_pos(rime->table, context.menu.highlighted_candidate_index);
     ibus_engine_update_lookup_table((IBusEngine *)rime, rime->table, TRUE);
