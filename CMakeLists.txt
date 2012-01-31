@@ -43,5 +43,5 @@ link_directories(${PROJECT_SOURCE_DIR}/../librime/build/lib)
 
 aux_source_directory(. IBUS_RIME_SRC)
 add_executable(ibus-engine-rime ${IBUS_RIME_SRC})
-target_link_libraries(ibus-engine-rime rime stdc++
-  ${IBus_LIBRARIES} ${Boost_LIBRARIES} ${YamlCpp_LIBRARY} ${KyotoCabinet_LIBRARY} ${Opencc_LIBRARY})
+target_link_libraries(ibus-engine-rime rime stdc++ m
+  ${IBus_LIBRARIES} ${Boost_LIBRARIES} ${YamlCpp_LIBRARY} ${KyotoCabinet_LIBRARY} ${Opencc_LIBRARY} ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
