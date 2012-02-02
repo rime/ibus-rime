@@ -14,10 +14,9 @@ ibus-engine-rime: librime
 
 ibus-rime-data:
 	mkdir -p data
-	cp ../librime/data/default.yaml data/
-	cp ../librime/data/essay.kct data/
-	cp ../librime/data/schema/*.schema.yaml data/
-	cp ../librime/data/schema/*.dict.yaml data/
+	cp ../brise/default.yaml data/
+	cp ../brise/essay.kct data/
+	cp ../brise/preset/*.yaml data/
 
 install:
 	cp rime.xml $(sharedir)/ibus/component/
