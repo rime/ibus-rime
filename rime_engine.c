@@ -167,6 +167,9 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
   if (!RimeFindSession(rime->session_id)) {
     rime->session_id = RimeCreateSession();
   }
+  if (!rime->session_id) {  // service disabled
+    return FALSE;
+  }
   gboolean result = RimeProcessKey(rime->session_id, keyval, modifiers);
   ibus_rime_engine_commit_and_update(rime);
   return result;
