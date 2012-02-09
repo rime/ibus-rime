@@ -31,6 +31,20 @@ static void ibus_disconnect_cb(IBusBus *bus, gpointer user_data) {
   ibus_quit();
 }
 
+static int rime_deploy() {
+  char user_data_dir[1024] = "";
+  get_ibus_rime_user_data_dir(user_data_dir);
+  g_mkdir_with_parents(user_data_dir, 0700);
+
+  RimeTraits ibus_rime_traits;
+  ibus_rime_traits.shared_data_dir = IBUS_RIME_SHARED_DATA_DIR;
+  ibus_rime_traits.user_data_dir = user_data_dir;
+  ibus_rime_traits.distribution_name = DISTRIBUTION_NAME;
+  ibus_rime_traits.distribution_code_name = DISTRIBUTION_CODE_NAME;
+  ibus_rime_traits.distribution_version = DISTRIBUTION_VERSION;
+  return !RimeDeployWorkspace(&ibus_rime_traits);
+}
+
 static void rime_with_ibus() {
   ibus_init();
   IBusBus *bus = ibus_bus_new();
@@ -80,6 +94,10 @@ static void atexit_cb() {
 }
 
 int main(gint argc, gchar** argv) {
+  if (argc > 1 && !strcmp(argv[1], "--deploy")) {
+    return rime_deploy();
+  }
+
   signal(SIGTERM, sigterm_cb);
   signal(SIGINT, sigterm_cb);
   g_atexit(atexit_cb);
