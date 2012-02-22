@@ -52,6 +52,9 @@ static void rime_with_ibus() {
   ibus_rime_traits.distribution_code_name = DISTRIBUTION_CODE_NAME;
   ibus_rime_traits.distribution_version = DISTRIBUTION_VERSION;
   RimeInitialize(&ibus_rime_traits);
+  if (RimeStartMaintenanceOnWorkspaceChange()) {
+    // TODO: notification...
+  }
 
   g_signal_connect(bus, "disconnected", G_CALLBACK(ibus_disconnect_cb), NULL);
 
