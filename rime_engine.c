@@ -111,7 +111,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
     return;
   }
 
-  IBusText *text = ibus_text_new_from_static_string(context.composition.preedit);
+  IBusText *text = ibus_text_new_from_string(context.composition.preedit);
   glong preedit_len = g_utf8_strlen(context.composition.preedit, -1);
   glong cursor_pos = g_utf8_strlen(context.composition.preedit, context.composition.cursor_pos);
   text->attrs = ibus_attr_list_new();
@@ -132,9 +132,18 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
   ibus_lookup_table_clear(rime->table);
   if (context.menu.num_candidates) {
     int i;
+    int num_select_keys = strlen(context.menu.select_keys);
     for (i = 0; i < context.menu.num_candidates; ++i) {
-      IBusText *cand_text = ibus_text_new_from_static_string(context.menu.candidates[i]);
+      IBusText *cand_text = ibus_text_new_from_string(context.menu.candidates[i]);
       ibus_lookup_table_append_candidate(rime->table, cand_text);
+      IBusText *label = NULL;
+      if (i < num_select_keys) {
+        label = ibus_text_new_from_unichar(context.menu.select_keys[i]);
+      }
+      else {
+        label = ibus_text_new_from_printf("%d", (i + 1) % 10);
+      }
+      ibus_lookup_table_set_label(rime->table, i, label);
     }
     ibus_lookup_table_set_cursor_pos(rime->table, context.menu.highlighted_candidate_index);
     ibus_engine_update_lookup_table((IBusEngine *)rime, rime->table, TRUE);
@@ -148,7 +157,7 @@ static void ibus_rime_engine_commit_and_update(IBusRimeEngine *rime) {
   RimeCommit commit;
   if (RimeGetCommit(rime->session_id, &commit)) {
     IBusText *text;
-    text = ibus_text_new_from_static_string(commit.text);
+    text = ibus_text_new_from_string(commit.text);
     ibus_engine_commit_text((IBusEngine *)rime, text);
   }
   ibus_rime_engine_update(rime);
