@@ -12,11 +12,12 @@ ibus-engine-rime: librime
 	mkdir -p build
 	(cd build; cmake .. && 	make)
 
-ibus-rime-data:
+ibus-rime-data: ibus-engine-rime
 	mkdir -p data
 	cp ../brise/default.yaml data/
 	cp ../brise/essay.kct data/
 	cp ../brise/preset/*.yaml data/
+	(cd data; ../build/ibus-engine-rime --build && if [ -e rime.log ]; then rm rime.log; fi)
 
 install:
 	cp rime.xml $(sharedir)/ibus/component/

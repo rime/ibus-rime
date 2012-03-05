@@ -83,6 +83,12 @@ static void atexit_cb() {
 }
 
 int main(gint argc, gchar** argv) {
+  if (argc > 1 && !strcmp("--build", argv[1])) {
+    // build all schemas in current directory
+    RimeDeployerInitialize(NULL);
+    return RimePrebuildAllSchemas() ? 0 : 1;
+  }
+  
   signal(SIGTERM, sigterm_cb);
   signal(SIGINT, sigterm_cb);
   g_atexit(atexit_cb);
