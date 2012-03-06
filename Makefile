@@ -17,6 +17,8 @@ ibus-rime-data: ibus-engine-rime
 	cp ../brise/default.yaml data/
 	cp ../brise/essay.kct data/
 	cp ../brise/preset/*.yaml data/
+	cp ../brise/supplement/*.yaml data/
+	echo 'precompiling Rime schemas, patience...'
 	(cd data; ../build/ibus-engine-rime --build && if [ -e rime.log ]; then rm rime.log; fi)
 
 install:

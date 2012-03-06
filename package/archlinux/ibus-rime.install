@@ -1,0 +1,13 @@
+post_install() {
+  echo 'precompiling Rime schemas, patience...'
+	cd /usr/share/ibus-rime
+  /usr/lib/ibus-rime/ibus-engine-rime --build
+  if [ -e rime.log ]; then rm rime.log; fi
+}
+
+post_upgrade() {
+  echo 'precompiling Rime schemas, patience...'
+	cd /usr/share/ibus-rime
+  /usr/lib/ibus-rime/ibus-engine-rime --build
+  if [ -e rime.log ]; then rm rime.log; fi
+}
