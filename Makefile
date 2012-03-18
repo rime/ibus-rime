@@ -36,4 +36,4 @@ uninstall:
 	rm -R $(libexecdir)/ibus-rime
 
 clean:
-	rm -R build
+	if  [ -e build ]; then rm -R build; fi
