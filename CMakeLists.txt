@@ -13,7 +13,11 @@ if(IBus_FOUND)
   link_directories(${IBus_LIBRARY_DIRS})
 endif(IBus_FOUND)
 
-set(Boost_USE_STATIC_LIBS ON)
+find_package(Rime REQUIRED)
+if(Rime_FOUND)
+  include_directories(${Rime_INCLUDE_DIR})
+endif(Rime_FOUND)
+
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost 1.43.0 REQUIRED COMPONENTS filesystem regex signals system thread)
 if(Boost_FOUND)
@@ -38,10 +42,14 @@ if(Opencc_FOUND)
   include_directories(${Opencc_INCLUDE_DIR})
 endif(Opencc_FOUND)
 
-include_directories(${PROJECT_SOURCE_DIR}/../librime/include)
-link_directories(${PROJECT_SOURCE_DIR}/../librime/build/lib)
-
 aux_source_directory(. IBUS_RIME_SRC)
 add_executable(ibus-engine-rime ${IBUS_RIME_SRC})
-target_link_libraries(ibus-engine-rime rime stdc++ m
-  ${IBus_LIBRARIES} ${Boost_LIBRARIES} ${YamlCpp_LIBRARY} ${KyotoCabinet_LIBRARY} ${Opencc_LIBRARY} ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(ibus-engine-rime stdc++ m
+  ${IBus_LIBRARIES}
+  ${Rime_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${YamlCpp_LIBRARY}
+  ${KyotoCabinet_LIBRARY}
+  ${Opencc_LIBRARY}
+  ${ZLIB_LIBRARY}
+  ${CMAKE_THREAD_LIBS_INIT})

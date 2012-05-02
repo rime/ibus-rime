@@ -1,13 +1,10 @@
-sharedir = /usr/share
-libexecdir = /usr/lib
+sharedir = $(DESTDIR)/usr/share
+libexecdir = $(DESTDIR)/usr/lib
 
 all: ibus-engine-rime ibus-rime-data
 	@echo ':)'
 
-librime:
-	(cd ../librime; ./build.sh)
-
-ibus-engine-rime: librime
+ibus-engine-rime:
 	if [ ! -e cmake ]; then ln -s ../librime/cmake; fi
 	mkdir -p build
 	(cd build; cmake .. && 	make)
