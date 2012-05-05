@@ -54,7 +54,6 @@ static void ibus_rime_engine_property_hide
 (IBusEngine             *engine,
  const gchar            *prop_name);
 
-static void ibus_rime_engine_commit_and_update(IBusRimeEngine      *rime);
 static void ibus_rime_engine_update      (IBusRimeEngine      *rime);
 
 G_DEFINE_TYPE (IBusRimeEngine, ibus_rime_engine, IBUS_TYPE_ENGINE)
@@ -98,18 +97,31 @@ ibus_rime_engine_destroy (IBusRimeEngine *rime)
 static void ibus_rime_engine_update(IBusRimeEngine *rime)
 {
   const int GLOW = 0xffffff;
+  const int DARK = 0x606060;
   const int BLACK = 0x000000;
   const int LUNA = 0xffff7f;
-  const int DARK = 0xd4d4d4;
+  const int SHADOW = 0xd4d4d4;
   const int HIGHLIGHT = 0x0a3dfa;
 
-  RimeContext context;
+  RimeCommit commit = {0};
+  if (RimeGetCommit(rime->session_id, &commit)) {
+    IBusText *text;
+    text = ibus_text_new_from_string(commit.text);
+    ibus_engine_commit_text((IBusEngine *)rime, text);  // the text object will be released by ibus
+    RimeFreeCommit(&commit);
+  }
+  
+  RimeContext context = {0};
+  RIME_STRUCT_INIT(RimeContext, context);
   if (!RimeGetContext(rime->session_id, &context) ||
       context.composition.length == 0) {
     ibus_engine_hide_auxiliary_text((IBusEngine *)rime);
     ibus_engine_hide_lookup_table((IBusEngine *)rime);
+    RimeFreeContext(&context);
     return;
   }
+
+  // begin updating UI
 
   IBusText *text = ibus_text_new_from_string(context.composition.preedit);
   glong preedit_len = g_utf8_strlen(context.composition.preedit, -1);
@@ -123,7 +135,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
     ibus_attr_list_append(text->attrs,
                           ibus_attr_foreground_new(BLACK, start, end));
     ibus_attr_list_append(text->attrs,
-                          ibus_attr_background_new(DARK, start, end));
+                          ibus_attr_background_new(SHADOW, start, end));
   }
   ibus_engine_update_auxiliary_text((IBusEngine *)rime,
                                     text,
@@ -134,7 +146,23 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
     int i;
     int num_select_keys = strlen(context.menu.select_keys);
     for (i = 0; i < context.menu.num_candidates; ++i) {
-      IBusText *cand_text = ibus_text_new_from_string(context.menu.candidates[i]);
+      gchar* text = context.menu.candidates[i].text;
+      gchar* comment = context.menu.candidates[i].comment;
+      IBusText *cand_text = NULL;
+      if (comment) {
+        gchar* temp = g_strconcat(text, " ", comment, NULL);
+        cand_text = ibus_text_new_from_string(temp);
+        g_free(temp);
+        int text_len = g_utf8_strlen(text, -1);
+        int end_index = ibus_text_get_length(cand_text);
+        ibus_text_append_attribute(cand_text,
+                                   IBUS_ATTR_TYPE_FOREGROUND,
+                                   DARK,
+                                   text_len, end_index);
+      }
+      else {
+        cand_text = ibus_text_new_from_string(text);
+      }
       ibus_lookup_table_append_candidate(rime->table, cand_text);
       IBusText *label = NULL;
       if (i < num_select_keys) {
@@ -151,16 +179,10 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
   else {
     ibus_engine_hide_lookup_table((IBusEngine *)rime);
   }
-}
 
-static void ibus_rime_engine_commit_and_update(IBusRimeEngine *rime) {
-  RimeCommit commit;
-  if (RimeGetCommit(rime->session_id, &commit)) {
-    IBusText *text;
-    text = ibus_text_new_from_string(commit.text);
-    ibus_engine_commit_text((IBusEngine *)rime, text);
-  }
-  ibus_rime_engine_update(rime);
+   // end updating UI
+  
+  RimeFreeContext(&context);
 }
 
 static gboolean 
@@ -180,6 +202,6 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
     return FALSE;
   }
   gboolean result = RimeProcessKey(rime->session_id, keyval, modifiers);
-  ibus_rime_engine_commit_and_update(rime);
+  ibus_rime_engine_update(rime);
   return result;
 }

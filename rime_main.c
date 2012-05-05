@@ -14,7 +14,7 @@
 
 #define DISTRIBUTION_NAME _("Rime")
 #define DISTRIBUTION_CODE_NAME "ibus-rime"
-#define DISTRIBUTION_VERSION "0.9"
+#define DISTRIBUTION_VERSION "0.9.1"
 
 #define IBUS_RIME_INSTALL_PREFIX "/usr"
 #define IBUS_RIME_SHARED_DATA_DIR IBUS_RIME_INSTALL_PREFIX "/share/ibus-rime"
@@ -69,6 +69,8 @@ static void rime_with_ibus() {
   
   ibus_main();
   
+  RimeFinalize();
+  
   g_object_unref(factory);
   g_object_unref(bus);
 }
@@ -76,10 +78,6 @@ static void rime_with_ibus() {
 static void sigterm_cb(int sig) {
   RimeFinalize();
   exit(EXIT_FAILURE);
-}
-
-static void atexit_cb() {
-  RimeFinalize();
 }
 
 int main(gint argc, gchar** argv) {
@@ -91,7 +89,6 @@ int main(gint argc, gchar** argv) {
   
   signal(SIGTERM, sigterm_cb);
   signal(SIGINT, sigterm_cb);
-  g_atexit(atexit_cb);
 
   rime_with_ibus();
   return 0;
