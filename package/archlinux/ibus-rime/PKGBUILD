@@ -1,0 +1,25 @@
+# Maintainer: GONG Chen <chen dot sst at gmail dot com>
+# Contributor: 網軍總司令
+pkgname=ibus-rime
+pkgver=0.9.1
+pkgrel=1
+pkgdesc="Rime input method engine for ibus"
+arch=('i686' 'x86_64')
+url="http://code.google.com/p/rimeime/"
+license=('GPL3')
+depends=('ibus' 'librime')
+makedepends=('cmake')
+install=ibus-rime.install
+changelog=ChangeLog
+source=(http://rimeime.googlecode.com/files/$pkgname-$pkgver.tar.gz)
+
+build() {
+  cd "${srcdir}/$pkgname"
+  make ibus-rime
+}
+
+package() {
+  cd "${srcdir}/$pkgname"
+  make DESTDIR="$pkgdir" install
+}
+

@@ -1,9 +1,6 @@
 project(ibus-rime)
 cmake_minimum_required(VERSION 2.8)
 
-set(LIBRIME_VERSION 0.1)
-set(LIBRIME_SOVERSION 0)
-
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
@@ -18,38 +15,6 @@ if(Rime_FOUND)
   include_directories(${Rime_INCLUDE_DIR})
 endif(Rime_FOUND)
 
-set(Boost_USE_MULTITHREADED ON)
-find_package(Boost 1.43.0 REQUIRED COMPONENTS filesystem regex signals system thread)
-if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-  link_directories(${Boost_LIBRARY_DIRS})
-endif(Boost_FOUND)
-
-find_package(YamlCpp REQUIRED)
-if(YamlCpp_FOUND)
-  include_directories(${YamlCpp_INCLUDE_DIR})
-endif(YamlCpp_FOUND)
-
-find_package(Threads)
-find_package(ZLIB)
-find_package(KyotoCabinet REQUIRED)
-if(KyotoCabinet_FOUND)
-  include_directories(${KyotoCabinet_INCLUDE_DIR})
-endif(KyotoCabinet_FOUND)
-
-find_package(Opencc REQUIRED)
-if(Opencc_FOUND)
-  include_directories(${Opencc_INCLUDE_DIR})
-endif(Opencc_FOUND)
-
 aux_source_directory(. IBUS_RIME_SRC)
 add_executable(ibus-engine-rime ${IBUS_RIME_SRC})
-target_link_libraries(ibus-engine-rime stdc++ m
-  ${IBus_LIBRARIES}
-  ${Rime_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${YamlCpp_LIBRARY}
-  ${KyotoCabinet_LIBRARY}
-  ${Opencc_LIBRARY}
-  ${ZLIB_LIBRARY}
-  ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(ibus-engine-rime ${IBus_LIBRARIES} ${Rime_LIBRARIES})
