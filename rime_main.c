@@ -22,6 +22,13 @@
 static const char* get_ibus_rime_user_data_dir(char *path) {
   const char* home = getenv("HOME");
   strcpy(path, home);
+  strcat(path, "/.config/ibus/rime");
+  return path;
+}
+
+static const char* get_ibus_rime_old_user_data_dir(char *path) {
+  const char* home = getenv("HOME");
+  strcpy(path, home);
   strcat(path, "/.ibus/rime");
   return path;
 }
@@ -41,9 +48,18 @@ static void rime_with_ibus() {
     exit(0);
   }
 
-  char user_data_dir[1024] = "";
+  char user_data_dir[512] = {0};
+  char old_user_data_dir[512] = {0};
   get_ibus_rime_user_data_dir(user_data_dir);
-  g_mkdir_with_parents(user_data_dir, 0700);
+  if (!g_file_test(user_data_dir, G_FILE_TEST_IS_DIR)) {
+    get_ibus_rime_old_user_data_dir(old_user_data_dir);
+    if (g_file_test(old_user_data_dir, G_FILE_TEST_IS_DIR)) {
+      g_rename(old_user_data_dir, user_data_dir);
+    }
+    else {
+      g_mkdir_with_parents(user_data_dir, 0700);
+    }
+  }
 
   RimeTraits ibus_rime_traits;
   ibus_rime_traits.shared_data_dir = IBUS_RIME_SHARED_DATA_DIR;
