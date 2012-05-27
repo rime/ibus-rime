@@ -18,43 +18,42 @@ struct _IBusRimeEngineClass {
 };
 
 /* functions prototype */
-static void	ibus_rime_engine_class_init	(IBusRimeEngineClass	*klass);
-static void	ibus_rime_engine_init		(IBusRimeEngine		*engine);
-static void	ibus_rime_engine_destroy		(IBusRimeEngine		*engine);
-static gboolean 
-ibus_rime_engine_process_key_event
-(IBusEngine             *engine,
- guint               	 keyval,
- guint               	 keycode,
- guint               	 modifiers);
-static void ibus_rime_engine_focus_in    (IBusEngine             *engine);
-static void ibus_rime_engine_focus_out   (IBusEngine             *engine);
-static void ibus_rime_engine_reset       (IBusEngine             *engine);
-static void ibus_rime_engine_enable      (IBusEngine             *engine);
-static void ibus_rime_engine_disable     (IBusEngine             *engine);
-static void ibus_engine_set_cursor_location (IBusEngine             *engine,
-                                             gint                    x,
-                                             gint                    y,
-                                             gint                    w,
-                                             gint                    h);
-static void ibus_rime_engine_set_capabilities
-(IBusEngine             *engine,
- guint                   caps);
-static void ibus_rime_engine_page_up     (IBusEngine             *engine);
-static void ibus_rime_engine_page_down   (IBusEngine             *engine);
-static void ibus_rime_engine_cursor_up   (IBusEngine             *engine);
-static void ibus_rime_engine_cursor_down (IBusEngine             *engine);
-static void ibus_rime_property_activate  (IBusEngine             *engine,
-                                          const gchar            *prop_name,
-                                          gint                    prop_state);
-static void ibus_rime_engine_property_show
-(IBusEngine             *engine,
- const gchar            *prop_name);
-static void ibus_rime_engine_property_hide
-(IBusEngine             *engine,
- const gchar            *prop_name);
+static void ibus_rime_engine_class_init (IBusRimeEngineClass *klass);
+static void ibus_rime_engine_init (IBusRimeEngine *engine);
+static void ibus_rime_engine_destroy (IBusRimeEngine *engine);
+static gboolean ibus_rime_engine_process_key_event (IBusEngine *engine,
+                                                    guint keyval,
+                                                    guint keycode,
+                                                    guint modifiers);
+static void ibus_rime_engine_focus_in (IBusEngine *engine);
+static void ibus_rime_engine_focus_out (IBusEngine *engine);
+static void ibus_rime_engine_reset (IBusEngine *engine);
+static void ibus_rime_engine_enable (IBusEngine *engine);
+static void ibus_rime_engine_disable (IBusEngine *engine);
+static void ibus_engine_set_cursor_location (IBusEngine *engine,
+                                             gint x,
+                                             gint y,
+                                             gint w,
+                                             gint h);
+static void ibus_rime_engine_set_capabilities (IBusEngine *engine,
+                                               guint caps);
+static void ibus_rime_engine_page_up (IBusEngine *engine);
+static void ibus_rime_engine_page_down (IBusEngine *engine);
+static void ibus_rime_engine_cursor_up (IBusEngine *engine);
+static void ibus_rime_engine_cursor_down (IBusEngine *engine);
+static void ibus_rime_engine_candidate_clicked (IBusEngine *engine,
+                                                guint index,
+                                                guint button,
+                                                guint state);
+static void ibus_rime_engine_property_activate (IBusEngine *engine,
+                                                const gchar *prop_name,
+                                                gint prop_state);
+static void ibus_rime_engine_property_show (IBusEngine *engine,
+                                            const gchar *prop_name);
+static void ibus_rime_engine_property_hide (IBusEngine *engine,
+                                            const gchar *prop_name);
 
-static void ibus_rime_engine_update      (IBusRimeEngine      *rime);
+static void ibus_rime_engine_update (IBusRimeEngine *rime);
 
 G_DEFINE_TYPE (IBusRimeEngine, ibus_rime_engine, IBUS_TYPE_ENGINE)
 
@@ -63,10 +62,15 @@ ibus_rime_engine_class_init (IBusRimeEngineClass *klass)
 {
   IBusObjectClass *ibus_object_class = IBUS_OBJECT_CLASS (klass);
   IBusEngineClass *engine_class = IBUS_ENGINE_CLASS (klass);
-	
+        
   ibus_object_class->destroy = (IBusObjectDestroyFunc) ibus_rime_engine_destroy;
 
   engine_class->process_key_event = ibus_rime_engine_process_key_event;
+  engine_class->focus_in = ibus_rime_engine_focus_in;
+  engine_class->focus_out = ibus_rime_engine_focus_out;
+  engine_class->reset = ibus_rime_engine_reset;
+  engine_class->enable = ibus_rime_engine_enable;
+  engine_class->disable = ibus_rime_engine_disable;
 }
 
 static void
@@ -92,6 +96,52 @@ ibus_rime_engine_destroy (IBusRimeEngine *rime)
   }
 
   ((IBusObjectClass *) ibus_rime_engine_parent_class)->destroy((IBusObject *)rime);
+}
+
+static void
+ibus_rime_engine_focus_in (IBusEngine *engine)
+{
+  IBusRimeEngine *rime = (IBusRimeEngine *)engine;
+  if (rime->session_id) {
+    ibus_rime_engine_update(rime);
+  }
+}
+
+static void
+ibus_rime_engine_focus_out (IBusEngine *engine)
+{
+  // force committing...
+  // unfortunately this doesn't work when switching input method.
+  // so I don't see a reason not to keep the composition editable when focus comes back.
+  //
+  //IBusRimeEngine *rime = (IBusRimeEngine *)engine;
+  //if (RimeCommitComposition(rime->session_id)) {
+  //  ibus_rime_engine_update(rime);
+  //}
+}
+
+static void
+ibus_rime_engine_reset (IBusEngine *engine)
+{
+}
+
+static void
+ibus_rime_engine_enable (IBusEngine *engine)
+{
+  IBusRimeEngine *rime = (IBusRimeEngine *)engine;
+  if (!rime->session_id) {
+    rime->session_id = RimeCreateSession();
+  }
+}
+
+static void
+ibus_rime_engine_disable (IBusEngine *engine)
+{
+  IBusRimeEngine *rime = (IBusRimeEngine *)engine;
+  if (rime->session_id) {
+    RimeDestroySession(rime->session_id);
+    rime->session_id = 0;
+  }
 }
 
 static void ibus_rime_engine_update(IBusRimeEngine *rime)
@@ -180,7 +230,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
     ibus_engine_hide_lookup_table((IBusEngine *)rime);
   }
 
-   // end updating UI
+  // end updating UI
   
   RimeFreeContext(&context);
 }
