@@ -1,6 +1,7 @@
 #include <string.h>
 #include <rime_api.h>
 #include "rime_engine.h"
+#include "rime_settings.h"
 
 typedef struct _IBusRimeEngine IBusRimeEngine;
 typedef struct _IBusRimeEngineClass IBusRimeEngineClass;
@@ -165,6 +166,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
   RIME_STRUCT_INIT(RimeContext, context);
   if (!RimeGetContext(rime->session_id, &context) ||
       context.composition.length == 0) {
+    ibus_engine_hide_preedit_text((IBusEngine *)rime);
     ibus_engine_hide_auxiliary_text((IBusEngine *)rime);
     ibus_engine_hide_lookup_table((IBusEngine *)rime);
     RimeFreeContext(&context);
@@ -173,6 +175,18 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
 
   // begin updating UI
 
+  if (g_ibus_rime_settings.embed_preedit_text &&
+      context.commit_text_preview) {
+    IBusText *inline_text = ibus_text_new_from_string(context.commit_text_preview);
+    guint inline_text_len = ibus_text_get_length(inline_text);
+    inline_text->attrs = ibus_attr_list_new();
+    ibus_attr_list_append(inline_text->attrs,
+                          ibus_attr_underline_new(IBUS_ATTR_UNDERLINE_SINGLE, 0, inline_text_len));
+    ibus_engine_update_preedit_text((IBusEngine *)rime, inline_text, inline_text_len, TRUE);
+  }
+  else {
+    ibus_engine_hide_preedit_text((IBusEngine *)rime);
+  }
   IBusText *text = ibus_text_new_from_string(context.composition.preedit);
   glong preedit_len = g_utf8_strlen(context.composition.preedit, -1);
   glong cursor_pos = g_utf8_strlen(context.composition.preedit, context.composition.cursor_pos);
@@ -187,9 +201,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
     ibus_attr_list_append(text->attrs,
                           ibus_attr_background_new(SHADOW, start, end));
   }
-  ibus_engine_update_auxiliary_text((IBusEngine *)rime,
-                                    text,
-                                    TRUE);
+  ibus_engine_update_auxiliary_text((IBusEngine *)rime, text, TRUE);
 
   ibus_lookup_table_clear(rime->table);
   if (context.menu.num_candidates) {

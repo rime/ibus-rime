@@ -8,6 +8,7 @@
 #include <ibus.h>
 #include <rime_api.h>
 #include "rime_engine.h"
+#include "rime_settings.h"
 
 // TODO:
 #define _(x) (x)
@@ -48,6 +49,17 @@ static void rime_with_ibus() {
     exit(0);
   }
 
+  IBusConfig *config = ibus_bus_get_config(bus);
+  if (!config) {
+    g_warning("ibus config not accessible");
+  }
+  else {
+    g_object_ref_sink(config);
+    ibus_rime_load_settings(config);
+    g_signal_connect(config, "value-changed",
+                     G_CALLBACK(ibus_rime_config_value_changed_cb), NULL);
+  }
+
   char user_data_dir[512] = {0};
   char old_user_data_dir[512] = {0};
   get_ibus_rime_user_data_dir(user_data_dir);
@@ -86,7 +98,10 @@ static void rime_with_ibus() {
   ibus_main();
   
   RimeFinalize();
-  
+
+  if (config) {
+    g_object_unref(config);
+  }
   g_object_unref(factory);
   g_object_unref(bus);
 }
