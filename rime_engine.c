@@ -152,6 +152,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
   const int BLACK = 0x000000;
   const int LUNA = 0xffff7f;
   const int SHADOW = 0xd4d4d4;
+  const int PURE = 0x0a3dea;
   const int HIGHLIGHT = 0x0a3dfa;
 
   RimeCommit commit = {0};
@@ -175,33 +176,60 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
 
   // begin updating UI
 
-  if (g_ibus_rime_settings.embed_preedit_text &&
-      context.commit_text_preview) {
-    IBusText *inline_text = ibus_text_new_from_string(context.commit_text_preview);
+  IBusText* inline_text = NULL;
+  IBusText* text = NULL;
+  guint inline_cursor_pos = 0;
+  int offset = 0;
+  gboolean inline_preedit = g_ibus_rime_settings.embed_preedit_text && context.commit_text_preview;
+  gboolean highlighting = (context.composition.sel_start < context.composition.sel_end);
+  if (inline_preedit) {
+    inline_text = ibus_text_new_from_string(context.commit_text_preview);
     guint inline_text_len = ibus_text_get_length(inline_text);
+    inline_cursor_pos = inline_text_len;
     inline_text->attrs = ibus_attr_list_new();
     ibus_attr_list_append(inline_text->attrs,
                           ibus_attr_underline_new(IBUS_ATTR_UNDERLINE_SINGLE, 0, inline_text_len));
-    ibus_engine_update_preedit_text((IBusEngine *)rime, inline_text, inline_text_len, TRUE);
+    // hide converted range of auxiliary text if preedit is inline
+    if (highlighting) {
+      offset = context.composition.sel_start;
+      glong highlighting_start = g_utf8_strlen(context.composition.preedit, offset);
+      ibus_attr_list_append(inline_text->attrs,
+                            ibus_attr_foreground_new(GLOW, highlighting_start, inline_text_len));
+      ibus_attr_list_append(inline_text->attrs,
+                            ibus_attr_background_new(HIGHLIGHT, highlighting_start, inline_text_len));
+    }
+    else {
+      offset = context.composition.length;  // hide auxiliary text
+    }
+  }
+  if (offset < context.composition.length) {
+    const char* preedit = context.composition.preedit + offset;
+    text = ibus_text_new_from_string(preedit);
+    glong preedit_len = g_utf8_strlen(preedit, -1);
+    glong cursor_pos = g_utf8_strlen(preedit, context.composition.cursor_pos - offset);
+    text->attrs = ibus_attr_list_new();
+    if (highlighting) {
+      glong start = g_utf8_strlen(preedit, context.composition.sel_start - offset);
+      glong end = g_utf8_strlen(preedit, context.composition.sel_end - offset);
+      ibus_attr_list_append(text->attrs,
+                            ibus_attr_foreground_new(BLACK, start, end));
+      ibus_attr_list_append(text->attrs,
+                            ibus_attr_background_new(SHADOW, start, end));
+    }
+  }
+
+  if (inline_text) {
+    ibus_engine_update_preedit_text((IBusEngine *)rime, inline_text, inline_cursor_pos, TRUE);
   }
   else {
     ibus_engine_hide_preedit_text((IBusEngine *)rime);
   }
-  IBusText *text = ibus_text_new_from_string(context.composition.preedit);
-  glong preedit_len = g_utf8_strlen(context.composition.preedit, -1);
-  glong cursor_pos = g_utf8_strlen(context.composition.preedit, context.composition.cursor_pos);
-  text->attrs = ibus_attr_list_new();
-  //ibus_attr_list_append(text->attrs,
-  //                      ibus_attr_underline_new(IBUS_ATTR_UNDERLINE_SINGLE, 0, cursor_pos));
-  if (context.composition.sel_start < context.composition.sel_end) {
-    glong start = g_utf8_strlen(context.composition.preedit, context.composition.sel_start);
-    glong end = g_utf8_strlen(context.composition.preedit, context.composition.sel_end);
-    ibus_attr_list_append(text->attrs,
-                          ibus_attr_foreground_new(BLACK, start, end));
-    ibus_attr_list_append(text->attrs,
-                          ibus_attr_background_new(SHADOW, start, end));
+  if (text) {
+    ibus_engine_update_auxiliary_text((IBusEngine *)rime, text, TRUE);
   }
-  ibus_engine_update_auxiliary_text((IBusEngine *)rime, text, TRUE);
+  else {
+    ibus_engine_hide_auxiliary_text((IBusEngine *)rime);
+  }
 
   ibus_lookup_table_clear(rime->table);
   if (context.menu.num_candidates) {
