@@ -49,7 +49,7 @@ static void ibus_rime_engine_candidate_clicked (IBusEngine *engine,
                                                 guint state);
 static void ibus_rime_engine_property_activate (IBusEngine *engine,
                                                 const gchar *prop_name,
-                                                gint prop_state);
+                                                guint prop_state);
 static void ibus_rime_engine_property_show (IBusEngine *engine,
                                             const gchar *prop_name);
 static void ibus_rime_engine_property_hide (IBusEngine *engine,
@@ -352,7 +352,7 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
 
 static void ibus_rime_engine_property_activate (IBusEngine *engine,
                                                 const gchar *prop_name,
-                                                gint prop_state)
+                                                guint prop_state)
 {
   extern void ibus_rime_start(gboolean full_check);
   if (!strcmp("deploy", prop_name)) {

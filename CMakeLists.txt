@@ -10,6 +10,12 @@ if(IBus_FOUND)
   link_directories(${IBus_LIBRARY_DIRS})
 endif(IBus_FOUND)
 
+pkg_check_modules(LIBNOTIFY REQUIRED libnotify)
+if (LIBNOTIFY_FOUND)
+  include_directories(${LIBNOTIFY_INCLUDE_DIRS})
+  link_directories(${LIBNOTIFY_LIBRARY_DIRS})
+endif(LIBNOTIFY_FOUND)
+
 find_package(Rime REQUIRED)
 if(Rime_FOUND)
   include_directories(${Rime_INCLUDE_DIR})
@@ -17,4 +23,4 @@ endif(Rime_FOUND)
 
 aux_source_directory(. IBUS_RIME_SRC)
 add_executable(ibus-engine-rime ${IBUS_RIME_SRC})
-target_link_libraries(ibus-engine-rime ${IBus_LIBRARIES} ${Rime_LIBRARIES})
+target_link_libraries(ibus-engine-rime ${IBus_LIBRARIES} ${LIBNOTIFY_LIBRARIES} ${Rime_LIBRARIES})

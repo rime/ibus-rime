@@ -6,6 +6,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <ibus.h>
+#include <libnotify/notify.h>
 #include <rime_api.h>
 #include "rime_engine.h"
 #include "rime_settings.h"
@@ -55,7 +56,9 @@ void ibus_rime_start(gboolean full_check) {
   ibus_rime_traits.distribution_version = DISTRIBUTION_VERSION;
   RimeInitialize(&ibus_rime_traits);
   if (RimeStartMaintenance((Bool)full_check)) {
-    // TODO: notification...
+    NotifyNotification* notice = notify_notification_new("Deploying La Rime.", NULL, NULL);
+    notify_notification_show(notice, NULL);
+    g_object_unref(notice);
   }
 }
 
@@ -74,6 +77,8 @@ static void rime_with_ibus() {
     exit(0);
   }
 
+  g_signal_connect(bus, "disconnected", G_CALLBACK(ibus_disconnect_cb), NULL);
+
   IBusConfig *config = ibus_bus_get_config(bus);
   if (!config) {
     g_warning("ibus config not accessible");
@@ -85,11 +90,6 @@ static void rime_with_ibus() {
                      G_CALLBACK(ibus_rime_config_value_changed_cb), NULL);
   }
 
-  gboolean full_check = FALSE;
-  ibus_rime_start(full_check);
-
-  g_signal_connect(bus, "disconnected", G_CALLBACK(ibus_disconnect_cb), NULL);
-
   IBusFactory *factory = ibus_factory_new(ibus_bus_get_connection(bus));
   g_object_ref_sink(factory);
   
@@ -98,10 +98,18 @@ static void rime_with_ibus() {
     g_error("error requesting bus name");
     exit(1);
   }
-  
+
+  if (!notify_init("ibus-rime")) {
+    g_error("notify_init failed");
+    exit(1);
+  }
+  gboolean full_check = FALSE;
+  ibus_rime_start(full_check);
+
   ibus_main();
   
   RimeFinalize();
+  notify_uninit();
 
   if (config) {
     g_object_unref(config);
@@ -112,6 +120,7 @@ static void rime_with_ibus() {
 
 static void sigterm_cb(int sig) {
   RimeFinalize();
+  notify_uninit();
   exit(EXIT_FAILURE);
 }
 
