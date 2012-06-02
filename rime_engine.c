@@ -147,14 +147,6 @@ ibus_rime_engine_disable (IBusEngine *engine)
 
 static void ibus_rime_engine_update(IBusRimeEngine *rime)
 {
-  const int GLOW = 0xffffff;
-  const int DARK = 0x606060;
-  const int BLACK = 0x000000;
-  const int LUNA = 0xffff7f;
-  const int SHADOW = 0xd4d4d4;
-  const int PURE = 0x0a3dea;
-  const int HIGHLIGHT = 0x0a3dfa;
-
   RimeCommit commit = {0};
   if (RimeGetCommit(rime->session_id, &commit)) {
     IBusText *text;
@@ -194,9 +186,11 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
       offset = context.composition.sel_start;
       glong highlighting_start = g_utf8_strlen(context.composition.preedit, offset);
       ibus_attr_list_append(inline_text->attrs,
-                            ibus_attr_foreground_new(GLOW, highlighting_start, inline_text_len));
+                            ibus_attr_foreground_new(g_ibus_rime_settings.color_scheme->text_color,
+                                                     highlighting_start, inline_text_len));
       ibus_attr_list_append(inline_text->attrs,
-                            ibus_attr_background_new(HIGHLIGHT, highlighting_start, inline_text_len));
+                            ibus_attr_background_new(g_ibus_rime_settings.color_scheme->back_color,
+                                                     highlighting_start, inline_text_len));
     }
     else {
       offset = context.composition.length;  // hide auxiliary text
@@ -212,9 +206,9 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
       glong start = g_utf8_strlen(preedit, context.composition.sel_start - offset);
       glong end = g_utf8_strlen(preedit, context.composition.sel_end - offset);
       ibus_attr_list_append(text->attrs,
-                            ibus_attr_foreground_new(BLACK, start, end));
+                            ibus_attr_foreground_new(RIME_COLOR_BLACK, start, end));
       ibus_attr_list_append(text->attrs,
-                            ibus_attr_background_new(SHADOW, start, end));
+                            ibus_attr_background_new(RIME_COLOR_LIGHT, start, end));
     }
   }
 
@@ -247,7 +241,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
         int end_index = ibus_text_get_length(cand_text);
         ibus_text_append_attribute(cand_text,
                                    IBUS_ATTR_TYPE_FOREGROUND,
-                                   DARK,
+                                   RIME_COLOR_DARK,
                                    text_len, end_index);
       }
       else {
