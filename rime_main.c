@@ -34,6 +34,31 @@ static const char* get_ibus_rime_old_user_data_dir(char *path) {
   return path;
 }
 
+void ibus_rime_start(gboolean full_check) {
+  char user_data_dir[512] = {0};
+  char old_user_data_dir[512] = {0};
+  get_ibus_rime_user_data_dir(user_data_dir);
+  if (!g_file_test(user_data_dir, G_FILE_TEST_IS_DIR)) {
+    get_ibus_rime_old_user_data_dir(old_user_data_dir);
+    if (g_file_test(old_user_data_dir, G_FILE_TEST_IS_DIR)) {
+      g_rename(old_user_data_dir, user_data_dir);
+    }
+    else {
+      g_mkdir_with_parents(user_data_dir, 0700);
+    }
+  }
+  RimeTraits ibus_rime_traits;
+  ibus_rime_traits.shared_data_dir = IBUS_RIME_SHARED_DATA_DIR;
+  ibus_rime_traits.user_data_dir = user_data_dir;
+  ibus_rime_traits.distribution_name = DISTRIBUTION_NAME;
+  ibus_rime_traits.distribution_code_name = DISTRIBUTION_CODE_NAME;
+  ibus_rime_traits.distribution_version = DISTRIBUTION_VERSION;
+  RimeInitialize(&ibus_rime_traits);
+  if (RimeStartMaintenance((Bool)full_check)) {
+    // TODO: notification...
+  }
+}
+
 static void ibus_disconnect_cb(IBusBus *bus, gpointer user_data) {
   g_debug("bus disconnected");
   ibus_quit();
@@ -60,29 +85,8 @@ static void rime_with_ibus() {
                      G_CALLBACK(ibus_rime_config_value_changed_cb), NULL);
   }
 
-  char user_data_dir[512] = {0};
-  char old_user_data_dir[512] = {0};
-  get_ibus_rime_user_data_dir(user_data_dir);
-  if (!g_file_test(user_data_dir, G_FILE_TEST_IS_DIR)) {
-    get_ibus_rime_old_user_data_dir(old_user_data_dir);
-    if (g_file_test(old_user_data_dir, G_FILE_TEST_IS_DIR)) {
-      g_rename(old_user_data_dir, user_data_dir);
-    }
-    else {
-      g_mkdir_with_parents(user_data_dir, 0700);
-    }
-  }
-
-  RimeTraits ibus_rime_traits;
-  ibus_rime_traits.shared_data_dir = IBUS_RIME_SHARED_DATA_DIR;
-  ibus_rime_traits.user_data_dir = user_data_dir;
-  ibus_rime_traits.distribution_name = DISTRIBUTION_NAME;
-  ibus_rime_traits.distribution_code_name = DISTRIBUTION_CODE_NAME;
-  ibus_rime_traits.distribution_version = DISTRIBUTION_VERSION;
-  RimeInitialize(&ibus_rime_traits);
-  if (RimeStartMaintenanceOnWorkspaceChange()) {
-    // TODO: notification...
-  }
+  gboolean full_check = FALSE;
+  ibus_rime_start(full_check);
 
   g_signal_connect(bus, "disconnected", G_CALLBACK(ibus_disconnect_cb), NULL);
 

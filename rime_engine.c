@@ -11,7 +11,8 @@ struct _IBusRimeEngine {
 
   /* members */
   RimeSessionId session_id;
-  IBusLookupTable *table;
+  IBusLookupTable* table;
+  IBusPropList* props;
 };
 
 struct _IBusRimeEngineClass {
@@ -72,6 +73,7 @@ ibus_rime_engine_class_init (IBusRimeEngineClass *klass)
   engine_class->reset = ibus_rime_engine_reset;
   engine_class->enable = ibus_rime_engine_enable;
   engine_class->disable = ibus_rime_engine_disable;
+  engine_class->property_activate = ibus_rime_engine_property_activate;
 }
 
 static void
@@ -81,6 +83,37 @@ ibus_rime_engine_init (IBusRimeEngine *rime)
 
   rime->table = ibus_lookup_table_new(9, 0, TRUE, FALSE);
   g_object_ref_sink(rime->table);
+
+  rime->props = ibus_prop_list_new();
+  g_object_ref_sink(rime->props);
+
+  IBusProperty* prop;
+  IBusText* text;
+  IBusText* tips;
+  text = ibus_text_new_from_static_string("中");
+  tips = ibus_text_new_from_static_string("中 ↔ A");
+  prop = ibus_property_new("mode.chinese",
+                           PROP_TYPE_NORMAL,
+                           text,
+                           NULL,
+                           tips,
+                           TRUE,
+                           TRUE,
+                           PROP_STATE_UNCHECKED,
+                           NULL);
+  ibus_prop_list_append(rime->props, prop);
+  text = ibus_text_new_from_static_string("⟲");
+  tips = ibus_text_new_from_static_string("Deploy");
+  prop = ibus_property_new("deploy",
+                           PROP_TYPE_NORMAL,
+                           text,
+                           NULL,
+                           tips,
+                           TRUE,
+                           TRUE,
+                           PROP_STATE_UNCHECKED,
+                           NULL);
+  ibus_prop_list_append(rime->props, prop);
 }
 
 static void
@@ -96,6 +129,11 @@ ibus_rime_engine_destroy (IBusRimeEngine *rime)
     rime->table = NULL;
   }
 
+  if (rime->props) {
+    g_object_unref(rime->props);
+    rime->props = NULL;
+  }
+
   ((IBusObjectClass *) ibus_rime_engine_parent_class)->destroy((IBusObject *)rime);
 }
 
@@ -103,22 +141,16 @@ static void
 ibus_rime_engine_focus_in (IBusEngine *engine)
 {
   IBusRimeEngine *rime = (IBusRimeEngine *)engine;
-  if (rime->session_id) {
-    ibus_rime_engine_update(rime);
+  ibus_engine_register_properties((IBusEngine *)rime, rime->props);
+  if (!rime->session_id) {
+    rime->session_id = RimeCreateSession();
   }
+  ibus_rime_engine_update(rime);
 }
 
 static void
 ibus_rime_engine_focus_out (IBusEngine *engine)
 {
-  // force committing...
-  // unfortunately this doesn't work when switching input method.
-  // so I don't see a reason not to keep the composition editable when focus comes back.
-  //
-  //IBusRimeEngine *rime = (IBusRimeEngine *)engine;
-  //if (RimeCommitComposition(rime->session_id)) {
-  //  ibus_rime_engine_update(rime);
-  //}
 }
 
 static void
@@ -129,10 +161,6 @@ ibus_rime_engine_reset (IBusEngine *engine)
 static void
 ibus_rime_engine_enable (IBusEngine *engine)
 {
-  IBusRimeEngine *rime = (IBusRimeEngine *)engine;
-  if (!rime->session_id) {
-    rime->session_id = RimeCreateSession();
-  }
 }
 
 static void
@@ -147,6 +175,37 @@ ibus_rime_engine_disable (IBusEngine *engine)
 
 static void ibus_rime_engine_update(IBusRimeEngine *rime)
 {
+  // update properties
+  
+  gboolean is_disabled = TRUE;
+  gboolean is_ascii_mode = FALSE;
+
+  RimeStatus status = {0};
+  RIME_STRUCT_INIT(RimeStatus, status);
+  if (RimeGetStatus(rime->session_id, &status)) {
+    is_disabled = status.is_disabled;
+    is_ascii_mode = status.is_ascii_mode;
+    RimeFreeStatus(&status);
+  }
+  
+  IBusProperty* prop = ibus_prop_list_get(rime->props, 0);
+  if (prop) {
+    IBusText* text;
+    if (is_disabled) {
+      text = ibus_text_new_from_static_string("⌛");
+    }
+    else if (is_ascii_mode) {
+      text = ibus_text_new_from_static_string("A");
+    }
+    else {
+      text = ibus_text_new_from_static_string("中");
+    }
+    ibus_property_set_label(prop, text);
+    ibus_engine_update_property((IBusEngine *)rime, prop);
+  }
+
+  // commit text
+  
   RimeCommit commit = {0};
   if (RimeGetCommit(rime->session_id, &commit)) {
     IBusText *text;
@@ -155,6 +214,8 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
     RimeFreeCommit(&commit);
   }
   
+  // begin updating UI
+
   RimeContext context = {0};
   RIME_STRUCT_INIT(RimeContext, context);
   if (!RimeGetContext(rime->session_id, &context) ||
@@ -165,8 +226,6 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
     RimeFreeContext(&context);
     return;
   }
-
-  // begin updating UI
 
   IBusText* inline_text = NULL;
   IBusText* text = NULL;
@@ -283,9 +342,23 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
     rime->session_id = RimeCreateSession();
   }
   if (!rime->session_id) {  // service disabled
+    ibus_rime_engine_update(rime);
     return FALSE;
   }
   gboolean result = RimeProcessKey(rime->session_id, keyval, modifiers);
   ibus_rime_engine_update(rime);
   return result;
 }
+
+static void ibus_rime_engine_property_activate (IBusEngine *engine,
+                                                const gchar *prop_name,
+                                                gint prop_state)
+{
+  extern void ibus_rime_start(gboolean full_check);
+  if (!strcmp("deploy", prop_name)) {
+    RimeFinalize();
+    ibus_rime_start(TRUE);
+    ibus_rime_engine_update((IBusRimeEngine *)engine);
+  }
+}
+
