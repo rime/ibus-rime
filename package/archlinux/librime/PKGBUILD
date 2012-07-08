@@ -1,7 +1,7 @@
 # Maintainer: GONG Chen <chen dot sst at gmail dot com>
 # Contributor: 網軍總司令
 pkgname=librime
-pkgver=0.9.1
+pkgver=0.9.2
 pkgrel=1
 pkgdesc="Rime input method engine"
 arch=('i686' 'x86_64')
@@ -9,6 +9,7 @@ url="http://code.google.com/p/rimeime/"
 license=('GPL3')
 depends=('boost>=1.46' 'kyotocabinet' 'opencc' 'yaml-cpp')
 makedepends=('cmake')
+install=librime.install
 changelog=ChangeLog
 source=(http://rimeime.googlecode.com/files/$pkgname-$pkgver.tar.gz)
 
@@ -19,6 +20,6 @@ build() {
 
 package() {
   cd "${srcdir}/$pkgname"
-  make DESTDIR="$pkgdir" install
+  make DESTDIR="$pkgdir" install-librime
 }
 

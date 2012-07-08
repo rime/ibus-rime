@@ -1,3 +1,23 @@
+2012-07-08 GONG Chen <chen.sst@domain.com>
+
+	* 0.9.2-1 :
+	Rime 0.9.2 release.
+
+	* chord-typing support: combine multiple keys to compose a syllable at once.
+	* configuration: global page_size setting.
+	* inline mode: extend the API to support inline mode.
+	* table translator: add option to filter candidates by character set.
+	* user dictionary: automatic recovery for corrupted databases.
+	* user dictionary: fixed a bug that was responsible for missing user phrases.
+
+	* rime_deployer: a utility program to prepare Rime's workspace.
+	* rime_dict_manager: a utility program to import/export user dictionaries.
+
+	* librime package: include 'brise', a collection of preset schemata in the package.
+	* new schema: Middle Chinese Phonetic Transcription.
+	* new schema: IPA input method in X-SAMPA.
+
+
 2012-05-06 GONG Chen <chen.sst@domain.com>
 
 	* 0.9.1-1 :

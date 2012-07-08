@@ -10,8 +10,8 @@ for x in brise librime ibus-rime; do
   if [ -d $x ]; then rm -Rf $x; fi
   git clone ../../../$x && rm -Rf $x/.git
 done
-tar czvf ../librime-$version.tar.gz librime/
-tar czvf ../ibus-rime-$version.tar.gz brise/ ibus-rime/
+tar czvf ../librime-$version.tar.gz brise/ librime/
+tar czvf ../ibus-rime-$version.tar.gz ibus-rime/
 cd ..
 rm -Rf temp
 echo 

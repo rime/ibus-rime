@@ -1,0 +1,16 @@
+post_install() {
+  echo 'precompiling Rime schemas, patience...'
+  /usr/bin/rime_deployer --build /usr/share/rime-data
+  if [ -e /usr/share/rime-data/rime.log ]; then rm /usr/share/rime-data/rime.log; fi
+}
+
+post_upgrade() {
+  echo 'precompiling Rime schemas, patience...'
+  /usr/bin/rime_deployer --build /usr/share/rime-data
+  if [ -e /usr/share/rime-data/rime.log ]; then rm /usr/share/rime-data/rime.log; fi
+}
+
+pre_remove() {
+  echo 'cleaning up precompiled Rime schema files.'
+  rm /usr/share/rime-data/*.bin || true
+}
