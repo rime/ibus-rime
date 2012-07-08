@@ -9,6 +9,7 @@ url="http://code.google.com/p/rimeime/"
 license=('GPL3')
 depends=('ibus' 'libnotify' 'librime>=0.9.2')
 makedepends=('cmake')
+install=ibus-rime.install
 changelog=ChangeLog
 source=(http://rimeime.googlecode.com/files/$pkgname-$pkgver.tar.gz)
 
