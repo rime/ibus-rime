@@ -16,10 +16,10 @@
 
 #define DISTRIBUTION_NAME _("Rime")
 #define DISTRIBUTION_CODE_NAME "ibus-rime"
-#define DISTRIBUTION_VERSION "0.9.1"
+#define DISTRIBUTION_VERSION "0.9.2"
 
 #define IBUS_RIME_INSTALL_PREFIX "/usr"
-#define IBUS_RIME_SHARED_DATA_DIR IBUS_RIME_INSTALL_PREFIX "/share/ibus-rime"
+#define IBUS_RIME_SHARED_DATA_DIR IBUS_RIME_INSTALL_PREFIX "/share/rime-data"
 
 static const char* get_ibus_rime_user_data_dir(char *path) {
   const char* home = getenv("HOME");
@@ -125,12 +125,6 @@ static void sigterm_cb(int sig) {
 }
 
 int main(gint argc, gchar** argv) {
-  if (argc > 1 && !strcmp("--build", argv[1])) {
-    // build preset schemas into current directory
-    RimeDeployerInitialize(NULL);
-    return RimeDeployWorkspace() ? 0 : 1;
-  }
-  
   signal(SIGTERM, sigterm_cb);
   signal(SIGINT, sigterm_cb);
 
