@@ -103,6 +103,9 @@ static void rime_with_ibus() {
     g_error("notify_init failed");
     exit(1);
   }
+
+  RimeSetupLogging("rime.ibus");
+
   gboolean full_check = FALSE;
   ibus_rime_start(full_check);
 
