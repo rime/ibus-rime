@@ -22,16 +22,13 @@ Build and install ibus-rime
 You need both librime and ibus-rime packages.
 
 ```
-tar xzvf librime-*.tar.gz
-cd librime
-make
-sudo make install
-
-tar xzvf ibus-rime-*.tar.gz
+tar xzf librime-*.tar.gz
+tar xzf ibus-rime-*.tar.gz
 cd ibus-rime
-make
-sudo make install
+# do this as normal user
+./install.sh
 ```
+
 
 Configure IBus
 --------------
@@ -42,12 +39,7 @@ Configure Rime
 --------------
 http://code.google.com/p/rimeime/wiki/CustomizationGuide
 
-You will work with config files a lot.
-After making some changes, issue the commands in a terminal:
-```
-rm ~/.ibus/rime/default.yaml
-ibus-daemon -drx
-```
+After making some changes, click the ⟲ (Deploy) button on the language panel.
 
 It may take some time to rebuild dictionaries, depending on what has been changed.
 Rime will come back to work as soon as the deployment is finished.
