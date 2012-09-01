@@ -21,6 +21,13 @@ if(Rime_FOUND)
   include_directories(${Rime_INCLUDE_DIR})
 endif(Rime_FOUND)
 
+if(NOT DEFINED RIME_DATA_DIR)
+  find_package(Brise REQUIRED)
+  set(RIME_DATA_DIR ${BRISE_DIR})
+endif(NOT DEFINED RIME_DATA_DIR)
+message(STATUS "Precompiler macro RIME_DATA_DIR is set to \"${RIME_DATA_DIR}\"")
+add_definitions(-DRIME_DATA_DIR="${RIME_DATA_DIR}")
+
 aux_source_directory(. IBUS_RIME_SRC)
 add_executable(ibus-engine-rime ${IBUS_RIME_SRC})
 target_link_libraries(ibus-engine-rime ${IBus_LIBRARIES} ${LIBNOTIFY_LIBRARIES} ${Rime_LIBRARIES})

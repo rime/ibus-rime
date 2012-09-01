@@ -1,10 +1,12 @@
-sharedir = $(DESTDIR)/usr/share
-libexecdir = $(DESTDIR)/usr/lib
+ifeq (${PREFIX},)
+	PREFIX=/usr
+endif
+sharedir = $(DESTDIR)$(PREFIX)/share
+libexecdir = $(DESTDIR)$(PREFIX)/lib
 
 all: ibus-engine-rime
 
 ibus-engine-rime:
-	#if [ ! -e cmake ]; then ln -s ../librime/cmake; fi
 	mkdir -p build
 	(cd build; cmake .. && make)
 	@echo ':)'
@@ -15,7 +17,6 @@ install:
 	mkdir -p $(libexecdir)/ibus-rime
 	cp -f build/ibus-engine-rime $(libexecdir)/ibus-rime/
 	mkdir -p $(sharedir)/ibus-rime
-	#cp -rf data/* $(sharedir)/ibus-rime/
 	mkdir -p $(sharedir)/ibus-rime/icons
 	cp -f zhung.svg $(sharedir)/ibus-rime/icons/
 
