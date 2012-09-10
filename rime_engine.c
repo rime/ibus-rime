@@ -77,9 +77,17 @@ ibus_rime_engine_class_init (IBusRimeEngineClass *klass)
 }
 
 static void
-ibus_rime_engine_init (IBusRimeEngine *rime)
+ibus_rime_create_session (IBusRimeEngine *rime)
 {
   rime->session_id = RimeCreateSession();
+  RimeSetOption(rime->session_id, "soft_cursor", True);
+}
+
+static void
+ibus_rime_engine_init (IBusRimeEngine *rime)
+{
+  //rime->session_id = RimeCreateSession();
+  ibus_rime_create_session(rime);
 
   rime->table = ibus_lookup_table_new(9, 0, TRUE, FALSE);
   g_object_ref_sink(rime->table);
@@ -143,7 +151,8 @@ ibus_rime_engine_focus_in (IBusEngine *engine)
   IBusRimeEngine *rime = (IBusRimeEngine *)engine;
   ibus_engine_register_properties((IBusEngine *)rime, rime->props);
   if (!rime->session_id) {
-    rime->session_id = RimeCreateSession();
+    //rime->session_id = RimeCreateSession();
+    ibus_rime_create_session(rime);
   }
   ibus_rime_engine_update(rime);
 }
@@ -339,7 +348,8 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
   modifiers &= (IBUS_RELEASE_MASK | IBUS_CONTROL_MASK | IBUS_MOD1_MASK);
 
   if (!RimeFindSession(rime->session_id)) {
-    rime->session_id = RimeCreateSession();
+    //rime->session_id = RimeCreateSession();
+    ibus_rime_create_session(rime);
   }
   if (!rime->session_id) {  // service disabled
     ibus_rime_engine_update(rime);
