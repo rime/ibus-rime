@@ -8,7 +8,7 @@ all: ibus-engine-rime
 
 ibus-engine-rime:
 	mkdir -p build
-	(cd build; cmake .. && make)
+	(cd build; cmake -DCMAKE_BUILD_TYPE=Release .. && make)
 	@echo ':)'
 
 install:
