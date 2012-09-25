@@ -1,15 +1,23 @@
-2012-07-08 GONG Chen <chen.sst@domain.com>
+2012-09-25 GONG Chen <chen.sst@gmail.com>
+
+	* 0.9.3-1 :
+	Rime 0.9.3 release.
+
+	* New dependency: brise.
+	* Logging with google-glog.
+
+2012-07-08 GONG Chen <chen.sst@gmail.com>
 
 	* 0.9.2-1 :
 	Rime 0.9.2 release.
 	
 	* UI: new Rime logo.
-	* UI: Add Chinese/ascii mode indicator, and Deploy button to status bar.
-	* UI: Show notification when deploying Rime.
+	* UI: add Chinese/ascii mode indicator, and Deploy button to status bar.
+	* UI: show notification when deploying Rime.
 	
 	* package: use the shared copy of rime-data distributed with librime package.
 	
-2012-05-06 GONG Chen <chen.sst@domain.com>
+2012-05-06 GONG Chen <chen.sst@gmail.com>
 
 	* 0.9.1-1 :
 	Revised Rime 0.9 API.

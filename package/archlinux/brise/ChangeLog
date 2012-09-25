@@ -1,0 +1,10 @@
+2012-09-25 GONG Chen <chen.sst@gmail.com>
+
+	* 0.13-1 :
+	Brise 0.13 release.
+
+	* install data files from a separate package.
+	* update: luna_pinyin, terra_pinyin, jyutping tables.
+	* update: essay database.
+	* new schema: emoji.
+

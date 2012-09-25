@@ -1,4 +1,16 @@
-2012-07-08 GONG Chen <chen.sst@domain.com>
+2012-09-25 GONG Chen <chen.sst@gmail.com>
+
+	* 0.9.3-1 :
+	Rime 0.9.3 release.
+
+	* user dictionary for table input method.
+	* automatically build schema dependencies.
+	* logging with google-glog.
+    * install data files from a separate package: brise.
+    * new API: accessing schema list.
+    * new API: enabling/disabling soft cursor in preedit string.
+
+2012-07-08 GONG Chen <chen.sst@gmail.com>
 
 	* 0.9.2-1 :
 	Rime 0.9.2 release.
@@ -18,7 +30,7 @@
 	* new schema: IPA input method in X-SAMPA.
 
 
-2012-05-06 GONG Chen <chen.sst@domain.com>
+2012-05-06 GONG Chen <chen.sst@gmail.com>
 
 	* 0.9.1-1 :
 	Revised Rime 0.9 API.
