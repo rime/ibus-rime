@@ -2,12 +2,12 @@
 # Contributor: 網軍總司令
 pkgname=librime
 pkgver=0.9.3
-pkgrel=1
+pkgrel=2
 pkgdesc="Rime input method engine"
 arch=('i686' 'x86_64')
 url="http://code.google.com/p/rimeime/"
 license=('GPL3')
-depends=('boost>=1.46' 'kyotocabinet' 'opencc' 'yaml-cpp')
+depends=('boost>=1.46' 'google-glog' 'kyotocabinet' 'opencc' 'yaml-cpp')
 optdepends=('brise: Rime schema repository')
 makedepends=('cmake')
 changelog=ChangeLog
