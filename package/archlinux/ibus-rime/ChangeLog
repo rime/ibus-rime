@@ -1,10 +1,17 @@
+2012-09-26 GONG Chen <chen.sst@gmail.com>
+
+	* 0.9.4-1 :
+	Rime 0.9.4 release.
+
+	* update PKGBUILD.
+
 2012-09-25 GONG Chen <chen.sst@gmail.com>
 
 	* 0.9.3-1 :
 	Rime 0.9.3 release.
 
-	* New dependency: brise.
-	* Logging with google-glog.
+	* new dependency: brise.
+	* logging with google-glog.
 
 2012-07-08 GONG Chen <chen.sst@gmail.com>
 

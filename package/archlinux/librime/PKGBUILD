@@ -1,7 +1,7 @@
 # Maintainer: GONG Chen <chen dot sst at gmail dot com>
 # Contributor: 網軍總司令
 pkgname=librime
-pkgver=0.9.3
+pkgver=0.9.4
 pkgrel=2
 pkgdesc="Rime input method engine"
 arch=('i686' 'x86_64')

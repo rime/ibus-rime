@@ -1,3 +1,11 @@
+2012-09-26 GONG Chen <chen.sst@gmail.com>
+
+	* 0.9.4-1 :
+	Rime 0.9.4 release.
+
+	* document new dependency 'google-glog'.
+	* fix x64 build.
+
 2012-09-25 GONG Chen <chen.sst@gmail.com>
 
 	* 0.9.3-1 :
