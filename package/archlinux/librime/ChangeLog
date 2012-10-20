@@ -14,9 +14,9 @@
 	* user dictionary for table input method.
 	* automatically build schema dependencies.
 	* logging with google-glog.
-    * install data files from a separate package: brise.
-    * new API: accessing schema list.
-    * new API: enabling/disabling soft cursor in preedit string.
+	* install data files from a separate package: brise.
+	* new API: accessing schema list.
+	* new API: enabling/disabling soft cursor in preedit string.
 
 2012-07-08 GONG Chen <chen.sst@gmail.com>
 
