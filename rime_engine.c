@@ -182,37 +182,48 @@ ibus_rime_engine_disable (IBusEngine *engine)
   }
 }
 
-static void ibus_rime_engine_update(IBusRimeEngine *rime)
+static void ibus_rime_update_status(IBusRimeEngine *rime,
+                                    RimeStatus *status)
 {
-  // update properties
-  
-  gboolean is_disabled = TRUE;
-  gboolean is_ascii_mode = FALSE;
-
-  RimeStatus status = {0};
-  RIME_STRUCT_INIT(RimeStatus, status);
-  if (RimeGetStatus(rime->session_id, &status)) {
-    is_disabled = status.is_disabled;
-    is_ascii_mode = status.is_ascii_mode;
-    RimeFreeStatus(&status);
-  }
-  
   IBusProperty* prop = ibus_prop_list_get(rime->props, 0);
   if (prop) {
     IBusText* text;
-    if (is_disabled) {
+    if (!status || status->is_disabled) {
       text = ibus_text_new_from_static_string("⌛");
     }
-    else if (is_ascii_mode) {
+    else if (status->is_ascii_mode) {
       text = ibus_text_new_from_static_string("A");
     }
     else {
-      text = ibus_text_new_from_static_string("中");
+      /* schema_name is ".default" in switcher */
+      if (status->schema_name &&
+          status->schema_name[0] != '.') {
+        text = ibus_text_new_from_string(status->schema_name);
+      }
+      else {
+        text = ibus_text_new_from_static_string("中");
+      }
     }
     ibus_property_set_label(prop, text);
     ibus_engine_update_property((IBusEngine *)rime, prop);
   }
 
+}
+
+static void ibus_rime_engine_update(IBusRimeEngine *rime)
+{
+  // update properties
+  
+  RimeStatus status = {0};
+  RIME_STRUCT_INIT(RimeStatus, status);
+  if (RimeGetStatus(rime->session_id, &status)) {
+    ibus_rime_update_status(rime, &status);
+    RimeFreeStatus(&status);
+  }
+  else {
+    ibus_rime_update_status(rime, NULL);
+  }
+  
   // commit text
   
   RimeCommit commit = {0};
