@@ -1,3 +1,0 @@
-pre_upgrade() {
-  rm /usr/share/ibus-rime/*.bin || true
-}
