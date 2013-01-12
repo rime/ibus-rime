@@ -3,6 +3,9 @@
 #include "rime_engine.h"
 #include "rime_settings.h"
 
+// TODO:
+#define _(x) (x)
+
 typedef struct _IBusRimeEngine IBusRimeEngine;
 typedef struct _IBusRimeEngineClass IBusRimeEngineClass;
 
@@ -111,8 +114,20 @@ ibus_rime_engine_init (IBusRimeEngine *rime)
                            NULL);
   ibus_prop_list_append(rime->props, prop);
   text = ibus_text_new_from_static_string("⟲");
-  tips = ibus_text_new_from_static_string("Deploy");
+  tips = ibus_text_new_from_static_string(_("Deploy"));
   prop = ibus_property_new("deploy",
+                           PROP_TYPE_NORMAL,
+                           text,
+                           NULL,
+                           tips,
+                           TRUE,
+                           TRUE,
+                           PROP_STATE_UNCHECKED,
+                           NULL);
+  ibus_prop_list_append(rime->props, prop);
+  text = ibus_text_new_from_static_string("⇅");
+  tips = ibus_text_new_from_static_string(_("Sync data"));
+  prop = ibus_property_new("sync",
                            PROP_TYPE_NORMAL,
                            text,
                            NULL,
@@ -379,6 +394,17 @@ static void ibus_rime_engine_property_activate (IBusEngine *engine,
   if (!strcmp("deploy", prop_name)) {
     RimeFinalize();
     ibus_rime_start(TRUE);
+    ibus_rime_engine_update((IBusRimeEngine *)engine);
+  }
+  else if (!strcmp("sync", prop_name)) {
+    // in the case a maintenance thread has already been started
+    // by RimeStartMaintenance(); the following call to RimeSyncUserData
+    // will queue data synching tasks for execution in the working
+    // maintenance thread, and will return False.
+    // however, there is still chance that the working maintenance thread
+    // happens to be quitting when new tasks are added, thus leaving newly
+    // added tasks undone...
+    RimeSyncUserData();
     ibus_rime_engine_update((IBusRimeEngine *)engine);
   }
 }
