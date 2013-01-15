@@ -9,13 +9,17 @@ mkdir -p temp
 cd temp
 for x in brise librime ibus-rime; do
   if [ -d $x ]; then rm -Rf $x; fi
-  git clone ../../../$x && rm -Rf $x/.git
+  if [ -d ../../$x ]; then
+    git clone ../../$x && rm -Rf $x/.git
+  else
+    git clone ../../../$x && rm -Rf $x/.git
+  fi
 done
 tar czvf ../brise-$brise_version.tar.gz brise/
 tar czvf ../librime-$rime_version.tar.gz librime/
-tar czvf ../ibus-rime-$rime_version.tar.gz ibus-rime/
+tar czvf ../ibus-rime-$rime_version.tar.gz ibus-rime/ --exclude=brise --exclude=librime
 cd ..
 rm -Rf temp
-echo 
+echo
 echo 'built:'
-ls *-$brise_version.tar.gz *-$rime_version.tar.gz
+ls brise-$brise_version.tar.gz *rime-$rime_version.tar.gz
