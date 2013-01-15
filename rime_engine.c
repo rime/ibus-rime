@@ -67,7 +67,7 @@ ibus_rime_engine_class_init (IBusRimeEngineClass *klass)
 {
   IBusObjectClass *ibus_object_class = IBUS_OBJECT_CLASS (klass);
   IBusEngineClass *engine_class = IBUS_ENGINE_CLASS (klass);
-        
+
   ibus_object_class->destroy = (IBusObjectDestroyFunc) ibus_rime_engine_destroy;
 
   engine_class->process_key_event = ibus_rime_engine_process_key_event;
@@ -228,7 +228,7 @@ static void ibus_rime_update_status(IBusRimeEngine *rime,
 static void ibus_rime_engine_update(IBusRimeEngine *rime)
 {
   // update properties
-  
+
   RimeStatus status = {0};
   RIME_STRUCT_INIT(RimeStatus, status);
   if (RimeGetStatus(rime->session_id, &status)) {
@@ -238,9 +238,9 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
   else {
     ibus_rime_update_status(rime, NULL);
   }
-  
+
   // commit text
-  
+
   RimeCommit commit = {0};
   if (RimeGetCommit(rime->session_id, &commit)) {
     IBusText *text;
@@ -248,7 +248,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
     ibus_engine_commit_text((IBusEngine *)rime, text);  // the text object will be released by ibus
     RimeFreeCommit(&commit);
   }
-  
+
   // begin updating UI
 
   RimeContext context = {0};
@@ -359,11 +359,11 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
   }
 
   // end updating UI
-  
+
   RimeFreeContext(&context);
 }
 
-static gboolean 
+static gboolean
 ibus_rime_engine_process_key_event (IBusEngine *engine,
                                     guint       keyval,
                                     guint       keycode,
@@ -371,7 +371,8 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
 {
   IBusRimeEngine *rime = (IBusRimeEngine *)engine;
 
-  modifiers &= (IBUS_RELEASE_MASK | IBUS_CONTROL_MASK | IBUS_MOD1_MASK);
+  modifiers &= (IBUS_RELEASE_MASK | IBUS_LOCK_MASK | IBUS_SHIFT_MASK |
+                IBUS_CONTROL_MASK | IBUS_MOD1_MASK | IBUS_SUPER_MASK);
 
   if (!RimeFindSession(rime->session_id)) {
     //rime->session_id = RimeCreateSession();
@@ -380,6 +381,14 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
   if (!rime->session_id) {  // service disabled
     ibus_rime_engine_update(rime);
     return FALSE;
+  }
+  if ((modifiers & IBUS_LOCK_MASK) != 0 &&
+      isascii((int)keyval) && isalpha(keyval)) {
+    // In Rime, Caps Lock changes conversion mode rather than letter case
+    if (islower(keyval))
+      keyval = toupper(keyval);
+    else
+      keyval = tolower(keyval);
   }
   gboolean result = RimeProcessKey(rime->session_id, keyval, modifiers);
   ibus_rime_engine_update(rime);
