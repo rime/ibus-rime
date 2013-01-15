@@ -1,3 +1,12 @@
+2013-01-16  GONG Chen  <chen.sst@gmail.com>
+
+	* rime_engine.c(ibus_rime_process_key_event):
+	support changing conversion mode with Caps Lock.
+
+	* librime: updated to version 0.9.7.
+
+	- Rime 0.9.7 release.
+
 2013-01-12  GONG Chen  <chen.sst@gmail.com>
 
 	* rime_engine.c: add 'Sync data' button.

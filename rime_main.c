@@ -16,7 +16,7 @@
 
 #define DISTRIBUTION_NAME _("Rime")
 #define DISTRIBUTION_CODE_NAME "ibus-rime"
-#define DISTRIBUTION_VERSION "0.9.6"
+#define DISTRIBUTION_VERSION "0.9.7"
 
 #define IBUS_RIME_INSTALL_PREFIX "/usr"
 #define IBUS_RIME_SHARED_DATA_DIR IBUS_RIME_INSTALL_PREFIX "/share/rime-data"
@@ -115,7 +115,7 @@ static void rime_with_ibus() {
 
   IBusFactory *factory = ibus_factory_new(ibus_bus_get_connection(bus));
   g_object_ref_sink(factory);
-  
+
   ibus_factory_add_engine(factory, "rime", IBUS_TYPE_RIME_ENGINE);
   if (!ibus_bus_request_name(bus, "com.googlecode.rimeime.Rime", 0)) {
     g_error("error requesting bus name");
@@ -133,10 +133,10 @@ static void rime_with_ibus() {
   ibus_rime_start(full_check);
 
   ibus_main();
-  
+
   RimeFinalize();
   notify_uninit();
-  
+
   if (config) {
     g_object_unref(config);
   }
