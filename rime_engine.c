@@ -382,14 +382,6 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
     ibus_rime_engine_update(rime);
     return FALSE;
   }
-  if ((modifiers & IBUS_LOCK_MASK) != 0 &&
-      isascii((int)keyval) && isalpha(keyval)) {
-    // In Rime, Caps Lock changes conversion mode rather than letter case
-    if (islower(keyval))
-      keyval = toupper(keyval);
-    else
-      keyval = tolower(keyval);
-  }
   gboolean result = RimeProcessKey(rime->session_id, keyval, modifiers);
   ibus_rime_engine_update(rime);
   return result;
