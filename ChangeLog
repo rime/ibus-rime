@@ -1,3 +1,7 @@
+2013-02-02  GONG Chen  <chen.sst@gmail.com>
+
+	- Rime 0.9.8 release.
+
 2013-01-16  GONG Chen  <chen.sst@gmail.com>
 
 	* rime_engine.c(ibus_rime_process_key_event):

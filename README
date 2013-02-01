@@ -1,48 +1,18 @@
 ibus-rime: Rime Input Method Engine for Linux/IBus
 
-Manual Installation
-===================
+project home: http://code.google.com/p/rimeime/
+installation: http://code.google.com/p/rimeime/wiki/RimeWithIBus
 
-Prerequisites
--------------
+build dependencies:
+  - pkg-config
+  - cmake>=2.8
+  - librime>=0.9.8 (development package)
+  - libibus-1.0 (development package)
+  - libnotify (development package)
 
-To build la rime, you need these tools and libraries:
-
-  * cmake >= 2.8
-  * ibus >= 1.0
-  * boost >= 1.46
-  * gtest (optional)
-  * kyotocabinet 1.2
-  * opencc 0.3
-  * yaml-cpp 0.3
-
-Build and install ibus-rime
----------------------------
-
-You need both librime and ibus-rime packages.
-
-```
-tar xzf librime-*.tar.gz
-tar xzf ibus-rime-*.tar.gz
-cd ibus-rime
-# do this as normal user
-./install.sh
-```
-
-
-Configure IBus
---------------
-  * restart IBus
-  * add 'Rime' to the input method list in IBus Preferences
-
-Configure Rime
---------------
-http://code.google.com/p/rimeime/wiki/CustomizationGuide
-
-After making some changes, click the ⟲ (Deploy) button on the language panel.
-
-It may take some time to rebuild dictionaries, depending on what has been changed.
-Rime will come back to work as soon as the deployment is finished.
-If it doesn't, see ~/.ibus/rime/rime.log for error messages.
-
-Thank you.
+runtime dependencies:
+  - brise>=0.18
+  - librime>=0.9.8
+  - ibus
+  - libibus-1.0
+  - libnotify

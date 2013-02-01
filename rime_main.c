@@ -10,13 +10,14 @@
 #include <rime_api.h>
 #include "rime_engine.h"
 #include "rime_settings.h"
+#include "rime_version.h"
 
 // TODO:
 #define _(x) (x)
 
 #define DISTRIBUTION_NAME _("Rime")
 #define DISTRIBUTION_CODE_NAME "ibus-rime"
-#define DISTRIBUTION_VERSION "0.9.7"
+#define DISTRIBUTION_VERSION RIME_VERSION
 
 #define IBUS_RIME_INSTALL_PREFIX "/usr"
 #define IBUS_RIME_SHARED_DATA_DIR IBUS_RIME_INSTALL_PREFIX "/share/rime-data"
