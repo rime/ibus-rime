@@ -1,6 +1,8 @@
 project(ibus-rime)
 cmake_minimum_required(VERSION 2.8)
 
+option(BUILD_STATIC "Build Rime using static libraries" OFF)
+
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
@@ -28,6 +30,15 @@ endif(NOT DEFINED RIME_DATA_DIR)
 message(STATUS "Precompiler macro RIME_DATA_DIR is set to \"${RIME_DATA_DIR}\"")
 add_definitions(-DRIME_DATA_DIR="${RIME_DATA_DIR}")
 
+set(RIME_DEPS "")
+
+if(BUILD_STATIC)
+  link_directories(${PROJECT_SOURCE_DIR}/lib)
+  set(RIME_DEPS ${RIME_DEPS} m stdc++ pthread z
+      libboost_filesystem-mt.a libboost_regex-mt.a libboost_signals-mt.a libboost_system-mt.a libboost_thread-mt.a
+      libglog.a libkyotocabinet.a libopencc.a libyaml-cpp.a)
+endif(BUILD_STATIC)
+
 aux_source_directory(. IBUS_RIME_SRC)
 add_executable(ibus-engine-rime ${IBUS_RIME_SRC})
-target_link_libraries(ibus-engine-rime ${IBus_LIBRARIES} ${LIBNOTIFY_LIBRARIES} ${Rime_LIBRARIES})
+target_link_libraries(ibus-engine-rime ${IBus_LIBRARIES} ${LIBNOTIFY_LIBRARIES} ${Rime_LIBRARIES} ${RIME_DEPS})

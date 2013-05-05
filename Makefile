@@ -11,6 +11,11 @@ ibus-engine-rime:
 	(cd build; cmake -DCMAKE_BUILD_TYPE=Release .. && make)
 	@echo ':)'
 
+ibus-engine-rime-static:
+	mkdir -p build
+	(cd build; cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON .. && make)
+	@echo ':)'
+
 install:
 	mkdir -p $(sharedir)/ibus/component
 	cp rime.xml $(sharedir)/ibus/component/
