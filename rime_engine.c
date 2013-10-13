@@ -229,8 +229,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
 {
   // update properties
 
-  RimeStatus status = {0};
-  RIME_STRUCT_INIT(RimeStatus, status);
+  RIME_STRUCT(RimeStatus, status);
   if (RimeGetStatus(rime->session_id, &status)) {
     ibus_rime_update_status(rime, &status);
     RimeFreeStatus(&status);
@@ -241,7 +240,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
 
   // commit text
 
-  RimeCommit commit = {0};
+  RIME_STRUCT(RimeCommit, commit);
   if (RimeGetCommit(rime->session_id, &commit)) {
     IBusText *text;
     text = ibus_text_new_from_string(commit.text);
@@ -251,8 +250,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
 
   // begin updating UI
 
-  RimeContext context = {0};
-  RIME_STRUCT_INIT(RimeContext, context);
+  RIME_STRUCT(RimeContext, context);
   if (!RimeGetContext(rime->session_id, &context) ||
       context.composition.length == 0) {
     ibus_engine_hide_preedit_text((IBusEngine *)rime);

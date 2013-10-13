@@ -76,7 +76,7 @@ void ibus_rime_start(gboolean full_check) {
     }
   }
   RimeSetNotificationHandler(notification_handler, NULL);
-  RimeTraits ibus_rime_traits;
+  RIME_STRUCT(RimeTraits, ibus_rime_traits);
   ibus_rime_traits.shared_data_dir = IBUS_RIME_SHARED_DATA_DIR;
   ibus_rime_traits.user_data_dir = user_data_dir;
   ibus_rime_traits.distribution_name = DISTRIBUTION_NAME;
