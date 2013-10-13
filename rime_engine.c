@@ -320,7 +320,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
   ibus_lookup_table_clear(rime->table);
   if (context.menu.num_candidates) {
     int i;
-    int num_select_keys = strlen(context.menu.select_keys);
+    int num_select_keys = context.menu.select_keys ? strlen(context.menu.select_keys) : 0;
     for (i = 0; i < context.menu.num_candidates; ++i) {
       gchar* text = context.menu.candidates[i].text;
       gchar* comment = context.menu.candidates[i].comment;
