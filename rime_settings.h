@@ -5,13 +5,9 @@
 
 // colors
 
-#define RIME_COLOR_GLOW   0xffffff
 #define RIME_COLOR_LIGHT  0xd4d4d4
 #define RIME_COLOR_DARK   0x606060
 #define RIME_COLOR_BLACK  0x000000
-#define RIME_COLOR_LUNA   0xffff7f
-#define RIME_COLOR_DEEP   0x0a3dea
-#define RIME_COLOR_PURE   0x0a3dfa
 
 struct ColorSchemeDefinition {
   const char* color_scheme_id;
@@ -23,6 +19,7 @@ struct ColorSchemeDefinition {
 
 struct IBusRimeSettings {
   gboolean embed_preedit_text;
+  gint lookup_table_orientation;
   struct ColorSchemeDefinition* color_scheme;
 };
 

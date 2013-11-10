@@ -350,6 +350,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
       ibus_lookup_table_set_label(rime->table, i, label);
     }
     ibus_lookup_table_set_cursor_pos(rime->table, context.menu.highlighted_candidate_index);
+    ibus_lookup_table_set_orientation(rime->table, g_ibus_rime_settings.lookup_table_orientation);
     ibus_engine_update_lookup_table((IBusEngine *)rime, rime->table, TRUE);
   }
   else {
