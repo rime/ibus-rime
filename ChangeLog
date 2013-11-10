@@ -1,3 +1,10 @@
+2013-11-10  GONG Chen  <chen.sst@gmail.com>
+
+	* librime: update to version 1.0
+	* rime_settings.*: add config option 'lookup_table_orientation'.
+
+	- Rime 1.0 release.
+
 2013-05-05  GONG Chen  <chen.sst@gmail.com>
 
 	* brise: update to version 0.22
