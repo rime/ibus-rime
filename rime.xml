@@ -20,6 +20,7 @@
 			<longname>Rime</longname>
 			<description>Rime Input Method Engine</description>
 			<rank>0</rank>
+			<symbol>&#x37A2;</symbol>
 		</engine>
 	</engines>
 </component>
