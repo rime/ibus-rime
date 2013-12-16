@@ -45,7 +45,7 @@ ibus_rime_load_settings(IBusConfig* config)
 
   value = ibus_config_get_value(config, "engine/Rime", "lookup_table_orientation");
   if (!value) {
-    value = ibus_config_get_value(config, "general", "lookup_table_orientation");
+    value = ibus_config_get_value(config, "panel", "lookup_table_orientation");
   }
   if (value && g_variant_classify(value) == G_VARIANT_CLASS_INT32) {
     g_ibus_rime_settings.lookup_table_orientation = g_variant_get_int32(value);
@@ -71,6 +71,8 @@ ibus_rime_config_value_changed_cb(IBusConfig* config,
       g_ibus_rime_settings.embed_preedit_text = g_variant_get_boolean(value);
       return;
     }
+  }
+  else if (!strcmp("panel", section)) {
     if (!strcmp("lookup_table_orientation", name) &&
         value && g_variant_classify(value) == G_VARIANT_CLASS_INT32) {
       g_ibus_rime_settings.lookup_table_orientation = g_variant_get_int32(value);
