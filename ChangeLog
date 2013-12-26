@@ -1,9 +1,16 @@
+2013-12-26  GONG Chen  <chen.sst@gmail.com>
+
+	* rime.xml: add symbolic icon for GNOME Shell.
+	* rime_settings.*: fallback to ibus default UI options in 'panel' section.
+
+	- ibus-rime 1.1 release.
+
 2013-11-10  GONG Chen  <chen.sst@gmail.com>
 
 	* librime: update to version 1.0
 	* rime_settings.*: add config option 'lookup_table_orientation'.
 
-	- Rime 1.0 release.
+	- ibus-rime 1.0 release.
 
 2013-05-05  GONG Chen  <chen.sst@gmail.com>
 
