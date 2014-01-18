@@ -1,0 +1,25 @@
+#!/bin/bash
+
+basedir=$(dirname $(realpath $0))
+
+src=$1
+ver=$2
+if [[ -z "$src" || -z "$ver" ]]; then
+  echo "usage: `basename $0` path version"
+  exit 1
+fi
+
+pkg=$(basename $(realpath "$src"))
+echo "pkg=$pkg"
+
+if [[ "$pkg" =~ .*rime ]]; then
+  tag=rime-${ver}
+else
+  tag=$pkg-${ver}
+fi
+echo "tag=$tag"
+
+(cd $src ; git archive --format=tar.gz --prefix=$pkg/ $tag > $basedir/${pkg}-${ver}.tar.gz) || exit 1
+
+echo 'built:'
+ls $basedir/${pkg}-${ver}.tar.gz
