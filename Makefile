@@ -23,7 +23,7 @@ install:
 	cp -f build/ibus-engine-rime $(libexecdir)/ibus-rime/
 	mkdir -p $(sharedir)/ibus-rime
 	mkdir -p $(sharedir)/ibus-rime/icons
-	cp -f rime.png $(sharedir)/ibus-rime/icons/
+	cp -f icons/*.png $(sharedir)/ibus-rime/icons/
 
 uninstall:
 	rm $(sharedir)/ibus/component/rime.xml

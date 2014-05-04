@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ ! -e librime -a -e ../librime ]; then ln -s ../librime; fi
 if [ ! -e brise -a -e ../brise ]; then ln -s ../brise; fi
 
