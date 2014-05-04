@@ -151,6 +151,14 @@ ibus_rime_engine_destroy (IBusRimeEngine *rime)
     rime->session_id = 0;
   }
 
+  if (rime->status.schema_id) {
+    g_free(rime->status.schema_id);
+  }
+  if (rime->status.schema_name) {
+    g_free(rime->status.schema_name);
+  }
+  RIME_STRUCT_CLEAR(rime->status);
+
   if (rime->table) {
     g_object_unref(rime->table);
     rime->table = NULL;
@@ -204,6 +212,21 @@ ibus_rime_engine_disable (IBusEngine *engine)
 static void ibus_rime_update_status(IBusRimeEngine *rime,
                                     RimeStatus *status)
 {
+  if (status &&
+          rime->status.is_disabled == status->is_disabled &&
+          rime->status.is_ascii_mode == status->is_ascii_mode &&
+          rime->status.schema_id && status->schema_id &&
+          !strcmp(rime->status.schema_id, status->schema_id)) {
+    return;  // no updates
+  }
+
+  rime->status.is_disabled = status->is_disabled;
+  rime->status.is_ascii_mode = status->is_ascii_mode;
+  if (rime->status.schema_id) {
+    g_free(rime->status.schema_id);
+  }
+  rime->status.schema_id = g_strdup(status->schema_id);
+
   IBusProperty* prop = ibus_prop_list_get(rime->props, 0);
   const gchar* icon;
   IBusText* label;
