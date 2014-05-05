@@ -1,3 +1,4 @@
+#include "rime_config.h"
 #include <ibus.h>
 #include "rime_settings.h"
 

@@ -1,3 +1,4 @@
+#include "rime_config.h"
 #include <string.h>
 #include <rime_api.h>
 #include "rime_engine.h"
@@ -110,7 +111,7 @@ ibus_rime_engine_init (IBusRimeEngine *rime)
   prop = ibus_property_new("mode.chinese",
                            PROP_TYPE_NORMAL,
                            label,
-                           "/usr/share/ibus-rime/icons/zh.png",
+                           IBUS_RIME_ICONS_DIR "/zh.png",
                            tips,
                            TRUE,
                            TRUE,
@@ -122,7 +123,7 @@ ibus_rime_engine_init (IBusRimeEngine *rime)
   prop = ibus_property_new("deploy",
                            PROP_TYPE_NORMAL,
                            label,
-                           "/usr/share/ibus-rime/icons/reload.png",
+                           IBUS_RIME_ICONS_DIR "/reload.png",
                            tips,
                            TRUE,
                            TRUE,
@@ -134,7 +135,7 @@ ibus_rime_engine_init (IBusRimeEngine *rime)
   prop = ibus_property_new("sync",
                            PROP_TYPE_NORMAL,
                            label,
-                           "/usr/share/ibus-rime/icons/sync.png",
+                           IBUS_RIME_ICONS_DIR "/sync.png",
                            tips,
                            TRUE,
                            TRUE,
@@ -232,15 +233,15 @@ static void ibus_rime_update_status(IBusRimeEngine *rime,
   IBusText* label;
   if (prop) {
     if (!status || status->is_disabled) {
-      icon = "/usr/share/ibus-rime/icons/disabled.png";
+      icon = IBUS_RIME_ICONS_DIR "/disabled.png";
       label = ibus_text_new_from_static_string("維護");
     }
     else if (status->is_ascii_mode) {
-      icon = "/usr/share/ibus-rime/icons/abc.png";
+      icon = IBUS_RIME_ICONS_DIR "/abc.png";
       label = ibus_text_new_from_static_string("Abc");
     }
     else {
-      icon = "/usr/share/ibus-rime/icons/zh.png";
+      icon = IBUS_RIME_ICONS_DIR "/zh.png";
       /* schema_name is ".default" in switcher */
       if (status->schema_name && status->schema_name[0] != '.') {
         label = ibus_text_new_from_string(status->schema_name);
