@@ -1,3 +1,4 @@
+#include "rime_config.h"
 #include <string.h>
 #include <rime_api.h>
 #include "rime_engine.h"
@@ -14,6 +15,7 @@ struct _IBusRimeEngine {
 
   /* members */
   RimeSessionId session_id;
+  RimeStatus status;
   IBusLookupTable* table;
   IBusPropList* props;
 };
@@ -92,6 +94,9 @@ ibus_rime_engine_init (IBusRimeEngine *rime)
   //rime->session_id = RimeCreateSession();
   ibus_rime_create_session(rime);
 
+  RIME_STRUCT_INIT(RimeStatus, rime->status);
+  RIME_STRUCT_CLEAR(rime->status);
+
   rime->table = ibus_lookup_table_new(9, 0, TRUE, FALSE);
   g_object_ref_sink(rime->table);
 
@@ -99,38 +104,38 @@ ibus_rime_engine_init (IBusRimeEngine *rime)
   g_object_ref_sink(rime->props);
 
   IBusProperty* prop;
-  IBusText* text;
+  IBusText* label;
   IBusText* tips;
-  text = ibus_text_new_from_static_string("中");
+  label = ibus_text_new_from_static_string("中文");
   tips = ibus_text_new_from_static_string("中 ↔ A");
   prop = ibus_property_new("mode.chinese",
                            PROP_TYPE_NORMAL,
-                           text,
-                           NULL,
+                           label,
+                           IBUS_RIME_ICONS_DIR "/zh.png",
                            tips,
                            TRUE,
                            TRUE,
                            PROP_STATE_UNCHECKED,
                            NULL);
   ibus_prop_list_append(rime->props, prop);
-  text = ibus_text_new_from_static_string("⟲");
+  label = ibus_text_new_from_static_string("部署");
   tips = ibus_text_new_from_static_string(_("Deploy"));
   prop = ibus_property_new("deploy",
                            PROP_TYPE_NORMAL,
-                           text,
-                           NULL,
+                           label,
+                           IBUS_RIME_ICONS_DIR "/reload.png",
                            tips,
                            TRUE,
                            TRUE,
                            PROP_STATE_UNCHECKED,
                            NULL);
   ibus_prop_list_append(rime->props, prop);
-  text = ibus_text_new_from_static_string("⇅");
+  label = ibus_text_new_from_static_string("同步");
   tips = ibus_text_new_from_static_string(_("Sync data"));
   prop = ibus_property_new("sync",
                            PROP_TYPE_NORMAL,
-                           text,
-                           NULL,
+                           label,
+                           IBUS_RIME_ICONS_DIR "/sync.png",
                            tips,
                            TRUE,
                            TRUE,
@@ -146,6 +151,14 @@ ibus_rime_engine_destroy (IBusRimeEngine *rime)
     RimeDestroySession(rime->session_id);
     rime->session_id = 0;
   }
+
+  if (rime->status.schema_id) {
+    g_free(rime->status.schema_id);
+  }
+  if (rime->status.schema_name) {
+    g_free(rime->status.schema_name);
+  }
+  RIME_STRUCT_CLEAR(rime->status);
 
   if (rime->table) {
     g_object_unref(rime->table);
@@ -200,29 +213,47 @@ ibus_rime_engine_disable (IBusEngine *engine)
 static void ibus_rime_update_status(IBusRimeEngine *rime,
                                     RimeStatus *status)
 {
-  IBusProperty* prop = ibus_prop_list_get(rime->props, 0);
-  if (prop) {
-    IBusText* text;
-    if (!status || status->is_disabled) {
-      text = ibus_text_new_from_static_string("⌛");
-    }
-    else if (status->is_ascii_mode) {
-      text = ibus_text_new_from_static_string("A");
-    }
-    else {
-      /* schema_name is ".default" in switcher */
-      if (status->schema_name &&
-          status->schema_name[0] != '.') {
-        text = ibus_text_new_from_string(status->schema_name);
-      }
-      else {
-        text = ibus_text_new_from_static_string("中");
-      }
-    }
-    ibus_property_set_label(prop, text);
-    ibus_engine_update_property((IBusEngine *)rime, prop);
+  if (status &&
+          rime->status.is_disabled == status->is_disabled &&
+          rime->status.is_ascii_mode == status->is_ascii_mode &&
+          rime->status.schema_id && status->schema_id &&
+          !strcmp(rime->status.schema_id, status->schema_id)) {
+    return;  // no updates
   }
 
+  rime->status.is_disabled = status->is_disabled;
+  rime->status.is_ascii_mode = status->is_ascii_mode;
+  if (rime->status.schema_id) {
+    g_free(rime->status.schema_id);
+  }
+  rime->status.schema_id = g_strdup(status->schema_id);
+
+  IBusProperty* prop = ibus_prop_list_get(rime->props, 0);
+  const gchar* icon;
+  IBusText* label;
+  if (prop) {
+    if (!status || status->is_disabled) {
+      icon = IBUS_RIME_ICONS_DIR "/disabled.png";
+      label = ibus_text_new_from_static_string("維護");
+    }
+    else if (status->is_ascii_mode) {
+      icon = IBUS_RIME_ICONS_DIR "/abc.png";
+      label = ibus_text_new_from_static_string("Abc");
+    }
+    else {
+      icon = IBUS_RIME_ICONS_DIR "/zh.png";
+      /* schema_name is ".default" in switcher */
+      if (status->schema_name && status->schema_name[0] != '.') {
+        label = ibus_text_new_from_string(status->schema_name);
+      }
+      else {
+        label = ibus_text_new_from_static_string("中文");
+      }
+    }
+    ibus_property_set_icon(prop, icon);
+    ibus_property_set_label(prop, label);
+    ibus_engine_update_property((IBusEngine *)rime, prop);
+  }
 }
 
 static void ibus_rime_engine_update(IBusRimeEngine *rime)
