@@ -17,13 +17,13 @@ ibus-engine-rime-static:
 	@echo ':)'
 
 install:
-	mkdir -p $(sharedir)/ibus/component
-	cp rime.xml $(sharedir)/ibus/component/
-	mkdir -p $(libexecdir)/ibus-rime
-	cp -f build/ibus-engine-rime $(libexecdir)/ibus-rime/
-	mkdir -p $(sharedir)/ibus-rime
-	mkdir -p $(sharedir)/ibus-rime/icons
-	cp -f icons/*.png $(sharedir)/ibus-rime/icons/
+	install -m 755 -d $(sharedir)/ibus/component
+	install -m 644 -t $(sharedir)/ibus/component/ rime.xml
+	install -m 755 -d $(libexecdir)/ibus-rime
+	install -m 755 -t $(libexecdir)/ibus-rime/ build/ibus-engine-rime
+	install -m 755 -d $(sharedir)/ibus-rime
+	install -m 755 -d $(sharedir)/ibus-rime/icons
+	install -m 644 -t $(sharedir)/ibus-rime/icons/ icons/*.png
 
 uninstall:
 	rm $(sharedir)/ibus/component/rime.xml
