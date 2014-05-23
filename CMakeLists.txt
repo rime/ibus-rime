@@ -35,7 +35,7 @@ set(RIME_DEPS "")
 if(BUILD_STATIC)
   link_directories(${PROJECT_SOURCE_DIR}/lib)
   set(RIME_DEPS ${RIME_DEPS} m stdc++ pthread z
-      libboost_filesystem-mt.a libboost_regex-mt.a libboost_signals-mt.a libboost_system-mt.a libboost_thread-mt.a
+      libboost_filesystem.a libboost_regex.a libboost_signals.a libboost_system.a libboost_thread.a
       libglog.a libkyotocabinet.a libopencc.a libyaml-cpp.a)
 endif(BUILD_STATIC)
 
