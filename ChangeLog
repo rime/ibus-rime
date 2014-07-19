@@ -1,3 +1,12 @@
+2013-07-19  GONG Chen  <chen.sst@gmail.com>
+
+	* rime_engine.c: add status bar icons; update status bar only when there is
+	a change in IME status, to fix issues on Ubuntu Trusty.
+	* rime_config.h: define macros for version and file paths.
+	* Makefile: fix file permissions in install target.
+
+	- ibus-rime 1.2 release.
+
 2013-12-26  GONG Chen  <chen.sst@gmail.com>
 
 	* rime.xml: add symbolic icon for GNOME Shell.
