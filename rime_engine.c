@@ -221,12 +221,13 @@ static void ibus_rime_update_status(IBusRimeEngine *rime,
     return;  // no updates
   }
 
-  rime->status.is_disabled = status->is_disabled;
-  rime->status.is_ascii_mode = status->is_ascii_mode;
+  rime->status.is_disabled = status ? status->is_disabled : False;
+  rime->status.is_ascii_mode = status ? status->is_ascii_mode : False;
   if (rime->status.schema_id) {
     g_free(rime->status.schema_id);
   }
-  rime->status.schema_id = g_strdup(status->schema_id);
+  rime->status.schema_id =
+      status && status->schema_id ? g_strdup(status->schema_id) : NULL;
 
   IBusProperty* prop = ibus_prop_list_get(rime->props, 0);
   const gchar* icon;
