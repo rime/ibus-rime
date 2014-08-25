@@ -16,7 +16,7 @@
 			<license>GPL</license>
 			<author>GONG Chen &lt;chen.sst@gmail.com&gt;</author>
 			<icon>/usr/share/ibus-rime/icons/rime.png</icon>
-			<layout>us</layout>
+			<layout>default</layout>
 			<longname>Rime</longname>
 			<description>Rime Input Method Engine</description>
 			<rank>0</rank>
