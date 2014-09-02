@@ -36,7 +36,7 @@ if(BUILD_STATIC)
   link_directories(${PROJECT_SOURCE_DIR}/lib)
   set(RIME_DEPS ${RIME_DEPS} m stdc++ pthread z
       libboost_filesystem.a libboost_regex.a libboost_signals.a libboost_system.a libboost_thread.a
-      libglog.a libkyotocabinet.a libopencc.a libyaml-cpp.a)
+      libglog.a libkyotocabinet.a libmarisa.a libopencc.a libyaml-cpp.a)
 endif(BUILD_STATIC)
 
 aux_source_directory(. IBUS_RIME_SRC)

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+export BOOST_ROOT=$HOME/code/boost_1_55_0
+export LIBRARY_PATH=$BOOST_ROOT/stage/lib
+
+cd $(dirname $0)/..
+
+if [ ! -e librime -a -e ../librime ]; then ln -s ../librime; fi
+if [ ! -e brise -a -e ../brise ]; then ln -s ../brise; fi
+
+if [ ! -e lib ]; then ln -s librime/thirdparty/lib; fi
+if [ ! -e lib/libyaml-cpp.a ]; then (echo 'building rime depends...'; cd librime; make thirdparty) || exit 1; fi
+
+PKGDIR=$(pwd)/pkg
+mkdir -p $PKGDIR
+
+echo 'building rime...'
+(cd librime; make librime-static && make -C build-static DESTDIR=$PKGDIR install) || exit 1
+
+echo 'building brise...'
+PATH=$PKGDIR/usr/bin:$PATH
+(cd brise; make && make DESTDIR=$PKGDIR install) || exit 1
+
+echo 'building ibus-rime...'
+make clean && make ibus-engine-rime-static && make DESTDIR=$PKGDIR install || exit 1
+
+install -m 755 package/binpkg-install $PKGDIR/INSTALL
+echo 'binpkg built:' $PKGDIR
