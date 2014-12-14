@@ -3,6 +3,7 @@
 #include "rime_config.h"
 #include <stdlib.h>
 #include <string.h>
+#include <dlfcn.h>
 #include <signal.h>
 #include <glib.h>
 #include <glib-object.h>
@@ -79,8 +80,20 @@ void ibus_rime_start(gboolean full_check) {
   ibus_rime_traits.distribution_name = DISTRIBUTION_NAME;
   ibus_rime_traits.distribution_code_name = DISTRIBUTION_CODE_NAME;
   ibus_rime_traits.distribution_version = DISTRIBUTION_VERSION;
+  static RIME_MODULE_LIST(ibus_rime_modules, "default", "legacy");
+  ibus_rime_traits.modules = ibus_rime_modules;
   RimeInitialize(&ibus_rime_traits);
   RimeStartMaintenance((Bool)full_check);
+}
+
+static void* legacy_module_handle = NULL;
+
+static void load_plugin_modules() {
+  legacy_module_handle = dlopen("librime-legacy.so", RTLD_LAZY);
+}
+
+static void unload_plugin_modules() {
+  dlclose(legacy_module_handle);
 }
 
 static void ibus_disconnect_cb(IBusBus *bus, gpointer user_data) {
@@ -125,6 +138,7 @@ static void rime_with_ibus() {
     exit(1);
   }
 
+  load_plugin_modules();
   RimeSetupLogging("rime.ibus");
 
   gboolean full_check = FALSE;
@@ -133,6 +147,7 @@ static void rime_with_ibus() {
   ibus_main();
 
   RimeFinalize();
+  unload_plugin_modules();
   notify_uninit();
 
   if (config) {
