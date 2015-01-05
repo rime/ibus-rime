@@ -452,11 +452,7 @@ static void ibus_rime_engine_candidate_clicked (IBusEngine *engine,
   if(RIME_API_AVAILABLE(additionalApis,select_candidate))
   {
     additionalApis->select_candidate(rime->session_id,index);
-/*    if(RIME_API_AVAILABLE(additionalApis,clear_composition)) additionalApis->clear_composition(rime->session_id);
-    ibus_engine_hide_preedit_text((IBusEngine *)rime);
-    ibus_engine_hide_auxiliary_text((IBusEngine *)rime);
-    ibus_engine_hide_lookup_table((IBusEngine *)rime);*/
-    ibus_rime_engine_update((IBusEngine *)rime);
+    ibus_rime_engine_update(rime);
   }
 }
 
