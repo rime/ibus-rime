@@ -79,6 +79,7 @@ ibus_rime_engine_class_init (IBusRimeEngineClass *klass)
   engine_class->enable = ibus_rime_engine_enable;
   engine_class->disable = ibus_rime_engine_disable;
   engine_class->property_activate = ibus_rime_engine_property_activate;
+  engine_class->candidate_clicked = ibus_rime_engine_candidate_clicked;
 }
 
 static void
@@ -438,6 +439,24 @@ static void ibus_rime_engine_property_activate (IBusEngine *engine,
     // added tasks undone...
     RimeSyncUserData();
     ibus_rime_engine_update((IBusRimeEngine *)engine);
+  }
+}
+
+static void ibus_rime_engine_candidate_clicked (IBusEngine *engine,
+                                                guint index,
+                                                guint button,
+                                                guint state)
+{
+  IBusRimeEngine *rime = (IBusRimeEngine *)engine;
+  RimeApi * additionalApis = rime_get_api();
+  if(RIME_API_AVAILABLE(additionalApis,select_candidate))
+  {
+    additionalApis->select_candidate(rime->session_id,index);
+/*    if(RIME_API_AVAILABLE(additionalApis,clear_composition)) additionalApis->clear_composition(rime->session_id);
+    ibus_engine_hide_preedit_text((IBusEngine *)rime);
+    ibus_engine_hide_auxiliary_text((IBusEngine *)rime);
+    ibus_engine_hide_lookup_table((IBusEngine *)rime);*/
+    ibus_rime_engine_update((IBusEngine *)rime);
   }
 }
 
