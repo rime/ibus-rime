@@ -453,7 +453,9 @@ static void ibus_rime_engine_candidate_clicked (IBusEngine *engine,
   RimeApi * additionalApis = rime_get_api();
   if(RIME_API_AVAILABLE(additionalApis,select_candidate))
   {
-    additionalApis->select_candidate(rime->session_id,index);
+    RIME_STRUCT(RimeContext, context);
+    if(!RimeGetContext(rime->session_id, &context)) return;
+    additionalApis->select_candidate(rime->session_id,context.menu.page_no*context.menu.page_size+index);
     ibus_rime_engine_update(rime);
   }
 }
