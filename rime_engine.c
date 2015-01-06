@@ -80,6 +80,8 @@ ibus_rime_engine_class_init (IBusRimeEngineClass *klass)
   engine_class->disable = ibus_rime_engine_disable;
   engine_class->property_activate = ibus_rime_engine_property_activate;
   engine_class->candidate_clicked = ibus_rime_engine_candidate_clicked;
+  engine_class->page_up = ibus_rime_engine_page_up;
+  engine_class->page_down = ibus_rime_engine_page_down;
 }
 
 static void
@@ -455,4 +457,18 @@ static void ibus_rime_engine_candidate_clicked (IBusEngine *engine,
     ibus_rime_engine_update(rime);
   }
 }
+
+static void ibus_rime_engine_page_up (IBusEngine *engine)
+{
+    IBusRimeEngine *rime = (IBusRimeEngine *)engine;
+    RimeProcessKey(rime->session_id, IBUS_KEY_Page_Up, 0);
+    ibus_rime_engine_update(rime);
+}
+static void ibus_rime_engine_page_down (IBusEngine *engine)
+{
+    IBusRimeEngine *rime = (IBusRimeEngine *)engine;
+    RimeProcessKey(rime->session_id, IBUS_KEY_Page_Down, 0);
+    ibus_rime_engine_update(rime);
+}
+
 
