@@ -7,6 +7,7 @@
 #include <signal.h>
 #include <glib.h>
 #include <glib-object.h>
+#include <glib/gstdio.h>
 #include <ibus.h>
 #include <libnotify/notify.h>
 #include <rime_api.h>
