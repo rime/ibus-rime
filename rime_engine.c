@@ -451,11 +451,15 @@ static void ibus_rime_engine_candidate_clicked (IBusEngine *engine,
 {
   IBusRimeEngine *rime = (IBusRimeEngine *)engine;
   RimeApi * additionalApis = rime_get_api();
-  if(RIME_API_AVAILABLE(additionalApis,select_candidate))
-  {
+  if (RIME_API_AVAILABLE(additionalApis, select_candidate)) {
     RIME_STRUCT(RimeContext, context);
-    if(!RimeGetContext(rime->session_id, &context)) return;
-    additionalApis->select_candidate(rime->session_id,context.menu.page_no*context.menu.page_size+index);
+    if (!RimeGetContext(rime->session_id, &context) ||
+      context.composition.length == 0) {
+      RimeFreeContext(&context);
+      return;
+    }
+    additionalApis->select_candidate(rime->session_id, context.menu.page_no * context.menu.page_size + index);
+    RimeFreeContext(&context);
     ibus_rime_engine_update(rime);
   }
 }
@@ -466,11 +470,10 @@ static void ibus_rime_engine_page_up (IBusEngine *engine)
     RimeProcessKey(rime->session_id, IBUS_KEY_Page_Up, 0);
     ibus_rime_engine_update(rime);
 }
+
 static void ibus_rime_engine_page_down (IBusEngine *engine)
 {
     IBusRimeEngine *rime = (IBusRimeEngine *)engine;
     RimeProcessKey(rime->session_id, IBUS_KEY_Page_Down, 0);
     ibus_rime_engine_update(rime);
 }
-
-
