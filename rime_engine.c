@@ -361,6 +361,15 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
   if (context.menu.num_candidates) {
     int i;
     int num_select_keys = context.menu.select_keys ? strlen(context.menu.select_keys) : 0;
+    gboolean has_page_down = !context.menu.is_last_page;
+    gboolean has_page_up = context.menu.is_last_page && context.menu.page_no > 0;
+    ibus_lookup_table_set_round(rime->table, !(context.menu.is_last_page || context.menu.page_no == 0)); //show page up for middle page
+    ibus_lookup_table_set_page_size(rime->table, context.menu.page_size);
+    if (has_page_up) { //show page up for last page
+      for (i = 0; i < context.menu.page_size; ++i) {
+        ibus_lookup_table_append_candidate(rime->table, ibus_text_new_from_string(""));
+      }
+    }
     for (i = 0; i < context.menu.num_candidates; ++i) {
       gchar* text = context.menu.candidates[i].text;
       gchar* comment = context.menu.candidates[i].comment;
@@ -389,7 +398,15 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
       }
       ibus_lookup_table_set_label(rime->table, i, label);
     }
-    ibus_lookup_table_set_cursor_pos(rime->table, context.menu.highlighted_candidate_index);
+    if (has_page_down) { //show page down except last page
+      ibus_lookup_table_append_candidate(rime->table, ibus_text_new_from_string(""));
+    }
+    if (has_page_up) { //show page up for last page
+      ibus_lookup_table_set_cursor_pos(rime->table, context.menu.page_size + context.menu.highlighted_candidate_index);
+    }
+    else {
+      ibus_lookup_table_set_cursor_pos(rime->table, context.menu.highlighted_candidate_index);
+    }
     ibus_lookup_table_set_orientation(rime->table, g_ibus_rime_settings.lookup_table_orientation);
     ibus_engine_update_lookup_table((IBusEngine *)rime, rime->table, TRUE);
   }
