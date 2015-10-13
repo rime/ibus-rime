@@ -111,7 +111,7 @@ ibus_rime_engine_init (IBusRimeEngine *rime)
   IBusText* tips;
   label = ibus_text_new_from_static_string("中文");
   tips = ibus_text_new_from_static_string("中 ↔ A");
-  prop = ibus_property_new("mode.chinese",
+  prop = ibus_property_new("InputMode",
                            PROP_TYPE_NORMAL,
                            label,
                            IBUS_RIME_ICONS_DIR "/zh.png",
@@ -253,6 +253,11 @@ static void ibus_rime_update_status(IBusRimeEngine *rime,
       else {
         label = ibus_text_new_from_static_string("中文");
       }
+    }
+    if (status && !status->is_disabled && ibus_text_get_length(label) > 0) {
+      gunichar c = g_utf8_get_char(ibus_text_get_text(label));
+      IBusText* symbol = ibus_text_new_from_unichar(c);
+      ibus_property_set_symbol(prop, symbol);
     }
     ibus_property_set_icon(prop, icon);
     ibus_property_set_label(prop, label);
