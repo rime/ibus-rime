@@ -447,6 +447,11 @@ static void ibus_rime_engine_property_activate (IBusEngine *engine,
     RimeSyncUserData();
     ibus_rime_engine_update((IBusRimeEngine *)engine);
   }
+  else if (!strcmp("InputMode", prop_name)) {
+    IBusRimeEngine *rime = (IBusRimeEngine *)engine;
+    RimeSetOption(rime->session_id, "ascii_mode", !RimeGetOption(rime->session_id, "ascii_mode"));
+    ibus_rime_engine_update(rime);
+  }
 }
 
 static void ibus_rime_engine_candidate_clicked (IBusEngine *engine,
