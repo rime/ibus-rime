@@ -361,6 +361,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
   if (context.menu.num_candidates) {
     int i;
     int num_select_keys = context.menu.select_keys ? strlen(context.menu.select_keys) : 0;
+    gboolean has_labels = RIME_STRUCT_HAS_MEMBER(context, context.select_labels) && context.select_labels;
     gboolean has_page_down = !context.menu.is_last_page;
     gboolean has_page_up = context.menu.is_last_page && context.menu.page_no > 0;
     ibus_lookup_table_set_round(rime->table, !(context.menu.is_last_page || context.menu.page_no == 0)); //show page up for middle page
@@ -390,7 +391,10 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime)
       }
       ibus_lookup_table_append_candidate(rime->table, cand_text);
       IBusText *label = NULL;
-      if (i < num_select_keys) {
+      if (i < context.menu.page_size && has_labels) {
+        label = ibus_text_new_from_string(context.select_labels[i]);
+      }
+      else if (i < num_select_keys) {
         label = ibus_text_new_from_unichar(context.menu.select_keys[i]);
       }
       else {
