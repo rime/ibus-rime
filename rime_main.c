@@ -52,6 +52,7 @@ static void notification_handler(void* context_object,
     }
     else if (!strcmp(message_value, "success")) {
       show_message(_("Rime is ready."), NULL);
+      ibus_rime_load_settings();
     }
     else if (!strcmp(message_value, "failure")) {
       show_message(_("Rime has encountered an error."),
@@ -114,17 +115,6 @@ static void rime_with_ibus() {
 
   g_signal_connect(bus, "disconnected", G_CALLBACK(ibus_disconnect_cb), NULL);
 
-  IBusConfig *config = ibus_bus_get_config(bus);
-  if (!config) {
-    g_warning("ibus config not accessible");
-  }
-  else {
-    g_object_ref_sink(config);
-    ibus_rime_load_settings(config);
-    g_signal_connect(config, "value-changed",
-                     G_CALLBACK(ibus_rime_config_value_changed_cb), NULL);
-  }
-
   IBusFactory *factory = ibus_factory_new(ibus_bus_get_connection(bus));
   g_object_ref_sink(factory);
 
@@ -144,6 +134,7 @@ static void rime_with_ibus() {
 
   gboolean full_check = FALSE;
   ibus_rime_start(full_check);
+  ibus_rime_load_settings();
 
   ibus_main();
 
@@ -151,9 +142,6 @@ static void rime_with_ibus() {
   unload_plugin_modules();
   notify_uninit();
 
-  if (config) {
-    g_object_unref(config);
-  }
   g_object_unref(factory);
   g_object_unref(bus);
 }
