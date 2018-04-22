@@ -1,5 +1,7 @@
 #!/bin/bash
 
+git submodule update --init
+
 (cd librime; make && sudo make install) || exit 1
 (cd plum; make && sudo make install) || exit 1
 

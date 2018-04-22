@@ -32,9 +32,14 @@ add_definitions(-DRIME_DATA_DIR="${RIME_DATA_DIR}")
 set(RIME_DEPS "dl")
 
 if(BUILD_STATIC)
+  find_package(ICU REQUIRED uc)
+  if(ICU_FOUND)
+    set(RIME_DEPS ${RIME_DEPS} ${ICU_LIBRARIES})
+  endif()
+
   link_directories(${PROJECT_SOURCE_DIR}/lib)
   set(RIME_DEPS ${RIME_DEPS} m stdc++ pthread
-      libboost_filesystem.a libboost_regex.a libboost_signals.a libboost_system.a libboost_thread.a
+      libboost_filesystem.a libboost_locale.a libboost_regex.a libboost_signals.a libboost_system.a libboost_thread.a
       libglog.a libleveldb.a libmarisa.a libopencc.a libyaml-cpp.a)
 endif(BUILD_STATIC)
 
