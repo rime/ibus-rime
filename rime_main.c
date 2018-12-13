@@ -88,7 +88,10 @@ void ibus_rime_start(gboolean full_check) {
   static RIME_MODULE_LIST(ibus_rime_modules, "default", "legacy");
   ibus_rime_traits.modules = ibus_rime_modules;
   rime_api->initialize(&ibus_rime_traits);
-  rime_api->start_maintenance((Bool)full_check);
+  if (rime_api->start_maintenance((Bool)full_check)) {
+    // update frontend config
+    rime_api->deploy_config_file("ibus_rime.yaml", "config_version");
+  }
 }
 
 static void* legacy_module_handle = NULL;
