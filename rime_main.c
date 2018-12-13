@@ -122,7 +122,7 @@ static void rime_with_ibus() {
   g_object_ref_sink(factory);
 
   ibus_factory_add_engine(factory, "rime", IBUS_TYPE_RIME_ENGINE);
-  if (!ibus_bus_request_name(bus, "com.googlecode.rimeime.Rime", 0)) {
+  if (!ibus_bus_request_name(bus, "im.rime.Rime", 0)) {
     g_error("error requesting bus name");
     exit(1);
   }

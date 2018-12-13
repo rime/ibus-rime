@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- filename: rime.xml -->
 <component>
-	<name>com.googlecode.rimeime.Rime</name>
+	<name>im.rime.Rime</name>
 	<description>Rime Component</description>
 	<exec>/usr/lib/ibus-rime/ibus-engine-rime --ibus</exec>
 	<version>1.0</version>
 	<author>GONG Chen &lt;chen.sst@gmail.com&gt;</author>
 	<license>GPL</license>
-	<homepage>http://code.google.com/p/rimeime/</homepage>
+	<homepage>http://rime.im</homepage>
 	<textdomain>ibus-rime</textdomain>
 	<engines>
 		<engine>
