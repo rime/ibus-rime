@@ -21,6 +21,8 @@
 #define DISTRIBUTION_CODE_NAME "ibus-rime"
 #define DISTRIBUTION_VERSION RIME_VERSION
 
+RimeApi *rime_api = NULL;
+
 static const char* get_ibus_rime_user_data_dir(char *path) {
   const char* home = getenv("HOME");
   strcpy(path, home);
@@ -75,17 +77,18 @@ void ibus_rime_start(gboolean full_check) {
       g_mkdir_with_parents(user_data_dir, 0700);
     }
   }
-  RimeSetNotificationHandler(notification_handler, NULL);
+  rime_api->set_notification_handler(notification_handler, NULL);
   RIME_STRUCT(RimeTraits, ibus_rime_traits);
   ibus_rime_traits.shared_data_dir = IBUS_RIME_SHARED_DATA_DIR;
   ibus_rime_traits.user_data_dir = user_data_dir;
   ibus_rime_traits.distribution_name = DISTRIBUTION_NAME;
   ibus_rime_traits.distribution_code_name = DISTRIBUTION_CODE_NAME;
   ibus_rime_traits.distribution_version = DISTRIBUTION_VERSION;
+  ibus_rime_traits.app_name = "ibus";
   static RIME_MODULE_LIST(ibus_rime_modules, "default", "legacy");
   ibus_rime_traits.modules = ibus_rime_modules;
-  RimeInitialize(&ibus_rime_traits);
-  RimeStartMaintenance((Bool)full_check);
+  rime_api->initialize(&ibus_rime_traits);
+  rime_api->start_maintenance((Bool)full_check);
 }
 
 static void* legacy_module_handle = NULL;
@@ -130,15 +133,13 @@ static void rime_with_ibus() {
   }
 
   load_plugin_modules();
-  RimeSetupLogging("rime.ibus");
-
   gboolean full_check = FALSE;
   ibus_rime_start(full_check);
   ibus_rime_load_settings();
 
   ibus_main();
 
-  RimeFinalize();
+  rime_api->finalize();
   unload_plugin_modules();
   notify_uninit();
 
@@ -147,7 +148,9 @@ static void rime_with_ibus() {
 }
 
 static void sigterm_cb(int sig) {
-  RimeFinalize();
+  if (rime_api) {
+    rime_api->finalize();
+  }
   notify_uninit();
   exit(EXIT_FAILURE);
 }
@@ -156,6 +159,7 @@ int main(gint argc, gchar** argv) {
   signal(SIGTERM, sigterm_cb);
   signal(SIGINT, sigterm_cb);
 
+  rime_api = rime_get_api();
   rime_with_ibus();
   return 0;
 }

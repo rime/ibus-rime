@@ -1,8 +1,9 @@
 #ifndef __IBUS_RIME_SETTINGS_H__
 #define __IBUS_RIME_SETTINGS_H__
 
-// colors
+#include <ibus.h>
 
+// colors
 #define RIME_COLOR_LIGHT  0xd4d4d4
 #define RIME_COLOR_DARK   0x606060
 #define RIME_COLOR_BLACK  0x000000
@@ -12,8 +13,6 @@ struct ColorSchemeDefinition {
   int text_color;
   int back_color;
 };
-
-// settings
 
 struct IBusRimeSettings {
   gboolean embed_preedit_text;
