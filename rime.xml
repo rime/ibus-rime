@@ -7,7 +7,7 @@
 	<version>1.0</version>
 	<author>GONG Chen &lt;chen.sst@gmail.com&gt;</author>
 	<license>GPL</license>
-	<homepage>http://rime.im</homepage>
+	<homepage>https://rime.im</homepage>
 	<textdomain>ibus-rime</textdomain>
 	<engines>
 		<engine>

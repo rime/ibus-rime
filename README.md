@@ -2,7 +2,7 @@
 
 Rime Input Method Engine for Linux/IBus
 
-project home: [rime.im](http://rime.im)
+project home: [rime.im](https://rime.im)
 
 code repository: https://github.com/rime/ibus-rime
 
