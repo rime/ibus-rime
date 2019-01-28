@@ -1,3 +1,16 @@
+<a name="1.4.0"></a>
+## 1.4.0 (2019-01-28)
+
+
+* migrate to librime 1.x API
+* **rime.xml:**  udpate ibus component name to `im.rime.Rime`
+
+#### Bug Fixes
+
+* **rime_main.cc:**  deploy ibus_rime.yaml on maintenance ([8e081264](https://github.com/rime/ibus-rime/commit/8e081264977bfefdd233ebeb1235f11be55b28f8))
+
+
+
 <a name="1.3.0"></a>
 ## 1.3.0 (2018-04-22)
 
@@ -76,5 +89,3 @@
 * **UI**: new Rime logo.
 * **UI**: add Chinese/ascii mode indicator, and Deploy button to status bar.
 * **UI**: show notification when deploying Rime.
-
-

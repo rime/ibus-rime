@@ -1,7 +1,7 @@
 #ifndef RIME_CONFIG_H_
 #define RIME_CONFIG_H_
 
-#define RIME_VERSION "1.3"
+#define RIME_VERSION "1.4.0"
 
 #define IBUS_RIME_INSTALL_PREFIX "/usr"
 #define IBUS_RIME_SHARED_DATA_DIR IBUS_RIME_INSTALL_PREFIX "/share/rime-data"
