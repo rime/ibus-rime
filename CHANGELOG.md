@@ -3,7 +3,7 @@
 
 
 * migrate to librime 1.x API
-* **rime.xml:**  udpate ibus component name to `im.rime.Rime`
+* **rime.xml:**  update ibus component name to `im.rime.Rime`
 
 #### Bug Fixes
 
