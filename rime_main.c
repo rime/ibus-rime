@@ -64,6 +64,91 @@ static void notification_handler(void* context_object,
   }
 }
 
+static void **plugin_handles;
+static const char **plugin_modules;
+
+static int load_plugins(const char *config_file)
+{
+  RimeConfig config = {0};
+
+  if (!rime_api->config_open(config_file, &config)) {
+    g_error("error loading settings for %s\n", config_file);
+    return 1;
+  }
+
+  RimeConfigIterator iter;
+  int n = 0;
+  if (rime_api->config_begin_list(&iter, &config, "plugins")) {
+    while(rime_api->config_next(&iter)) n++;
+    rime_api->config_end(&iter);
+  }
+
+  int m = 0;
+  if (rime_api->config_begin_list(&iter, &config, "modules")) {
+    while(rime_api->config_next(&iter)) m++;
+    rime_api->config_end(&iter);
+  }
+
+  plugin_handles = malloc(sizeof(void *) * (n + 1));
+  if (!plugin_handles) {
+    return 2;
+  }
+
+  plugin_modules = malloc(sizeof(const char *) * (m + 2));
+  if (!plugin_modules) {
+    free(plugin_handles);
+    plugin_handles = NULL;
+    return 3;
+  }
+
+  n = 0;
+  if (rime_api->config_begin_list(&iter, &config, "plugins")) {
+    while(rime_api->config_next(&iter)) {
+      const char *file = rime_api->config_get_cstring(&config, iter.path);
+      if (file) {
+        plugin_handles[n] = dlopen(file, RTLD_LAZY | RTLD_GLOBAL);
+        n++;
+      }
+    }
+    rime_api->config_end(&iter);
+  }
+  plugin_handles[n] = NULL;
+
+  m = 1;
+  plugin_modules[0] = "default";
+  if (rime_api->config_begin_list(&iter, &config, "modules")) {
+    while(rime_api->config_next(&iter)) {
+      const char *mod = rime_api->config_get_cstring(&config, iter.path);
+      if (mod) {
+        plugin_modules[m] = strdup(mod);
+        m++;
+      }
+    }
+    rime_api->config_end(&iter);
+  }
+  plugin_modules[m] = NULL;
+
+  return 0;
+}
+
+static void unload_plugins() {
+  if (plugin_handles) {
+    for (int i = 0; plugin_handles[i]; i++) {
+      dlclose(plugin_handles[i]);
+    }
+    free(plugin_handles);
+    plugin_handles = NULL;
+  }
+
+  if (plugin_modules) {
+    for (int i = 1; plugin_modules[i]; i++) {
+      free((void *) plugin_modules[i]);
+    }
+    free(plugin_modules);
+    plugin_modules = NULL;
+  }
+}
+
 void ibus_rime_start(gboolean full_check) {
   char user_data_dir[512] = {0};
   char old_user_data_dir[512] = {0};
@@ -85,23 +170,27 @@ void ibus_rime_start(gboolean full_check) {
   ibus_rime_traits.distribution_code_name = DISTRIBUTION_CODE_NAME;
   ibus_rime_traits.distribution_version = DISTRIBUTION_VERSION;
   ibus_rime_traits.app_name = "ibus";
-  static RIME_MODULE_LIST(ibus_rime_modules, "default", "legacy");
-  ibus_rime_traits.modules = ibus_rime_modules;
+  ibus_rime_traits.modules = NULL;
+
+  // first initialization
   rime_api->initialize(&ibus_rime_traits);
   if (rime_api->start_maintenance((Bool)full_check)) {
     // update frontend config
     rime_api->deploy_config_file("ibus_rime.yaml", "config_version");
   }
+
+  // parse & load plugin modules
+  if (!load_plugins("ibus_rime")) {
+    rime_api->finalize();
+    // second initialization
+    ibus_rime_traits.modules = plugin_modules;
+    rime_api->initialize(&ibus_rime_traits);
+  }
 }
 
-static void* legacy_module_handle = NULL;
-
-static void load_plugin_modules() {
-  legacy_module_handle = dlopen("librime-legacy.so", RTLD_LAZY);
-}
-
-static void unload_plugin_modules() {
-  dlclose(legacy_module_handle);
+void ibus_rime_stop() {
+  rime_api->finalize();
+  unload_plugins();
 }
 
 static void ibus_disconnect_cb(IBusBus *bus, gpointer user_data) {
@@ -135,15 +224,13 @@ static void rime_with_ibus() {
     exit(1);
   }
 
-  load_plugin_modules();
   gboolean full_check = FALSE;
   ibus_rime_start(full_check);
   ibus_rime_load_settings();
 
   ibus_main();
 
-  rime_api->finalize();
-  unload_plugin_modules();
+  ibus_rime_stop();
   notify_uninit();
 
   g_object_unref(factory);
@@ -152,7 +239,7 @@ static void rime_with_ibus() {
 
 static void sigterm_cb(int sig) {
   if (rime_api) {
-    rime_api->finalize();
+    ibus_rime_stop();
   }
   notify_uninit();
   exit(EXIT_FAILURE);
