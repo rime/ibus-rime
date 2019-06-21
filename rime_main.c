@@ -227,7 +227,7 @@ static void rime_with_ibus() {
   ibus_rime_start(full_check);
 
   // parse & load plugin modules
-  if (!load_plugins("ibus_rime")) {
+  if (load_plugins("ibus_rime") == 0) {
     // second initialization
     ibus_rime_stop();
     ibus_rime_start(full_check);
