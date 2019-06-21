@@ -149,6 +149,14 @@ static void unload_plugins() {
   }
 }
 
+static void fill_traits(RimeTraits *traits) {
+  traits->shared_data_dir = IBUS_RIME_SHARED_DATA_DIR;
+  traits->distribution_name = DISTRIBUTION_NAME;
+  traits->distribution_code_name = DISTRIBUTION_CODE_NAME;
+  traits->distribution_version = DISTRIBUTION_VERSION;
+  traits->app_name = "ibus";
+}
+
 void ibus_rime_start(gboolean full_check) {
   char user_data_dir[512] = {0};
   char old_user_data_dir[512] = {0};
@@ -164,13 +172,8 @@ void ibus_rime_start(gboolean full_check) {
   }
   rime_api->set_notification_handler(notification_handler, NULL);
   RIME_STRUCT(RimeTraits, ibus_rime_traits);
-  ibus_rime_traits.shared_data_dir = IBUS_RIME_SHARED_DATA_DIR;
+  fill_traits(&ibus_rime_traits);
   ibus_rime_traits.user_data_dir = user_data_dir;
-  ibus_rime_traits.distribution_name = DISTRIBUTION_NAME;
-  ibus_rime_traits.distribution_code_name = DISTRIBUTION_CODE_NAME;
-  ibus_rime_traits.distribution_version = DISTRIBUTION_VERSION;
-  ibus_rime_traits.app_name = "ibus";
-  ibus_rime_traits.modules = NULL;
 
   // first initialization
   rime_api->initialize(&ibus_rime_traits);
@@ -223,6 +226,10 @@ static void rime_with_ibus() {
     g_error("notify_init failed");
     exit(1);
   }
+
+  RIME_STRUCT(RimeTraits, ibus_rime_traits);
+  fill_traits(&ibus_rime_traits);
+  rime_api->setup(&ibus_rime_traits);
 
   gboolean full_check = FALSE;
   ibus_rime_start(full_check);
