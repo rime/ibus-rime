@@ -174,26 +174,18 @@ void ibus_rime_start(gboolean full_check) {
   RIME_STRUCT(RimeTraits, ibus_rime_traits);
   fill_traits(&ibus_rime_traits);
   ibus_rime_traits.user_data_dir = user_data_dir;
+  if (plugin_modules)
+    ibus_rime_traits.modules = plugin_modules;
 
-  // first initialization
   rime_api->initialize(&ibus_rime_traits);
   if (rime_api->start_maintenance((Bool)full_check)) {
     // update frontend config
     rime_api->deploy_config_file("ibus_rime.yaml", "config_version");
   }
-
-  // parse & load plugin modules
-  if (!load_plugins("ibus_rime")) {
-    rime_api->finalize();
-    // second initialization
-    ibus_rime_traits.modules = plugin_modules;
-    rime_api->initialize(&ibus_rime_traits);
-  }
 }
 
 void ibus_rime_stop() {
   rime_api->finalize();
-  unload_plugins();
 }
 
 static void ibus_disconnect_cb(IBusBus *bus, gpointer user_data) {
@@ -233,11 +225,20 @@ static void rime_with_ibus() {
 
   gboolean full_check = FALSE;
   ibus_rime_start(full_check);
+
+  // parse & load plugin modules
+  if (!load_plugins("ibus_rime")) {
+    // second initialization
+    ibus_rime_stop();
+    ibus_rime_start(full_check);
+  }
+
   ibus_rime_load_settings();
 
   ibus_main();
 
   ibus_rime_stop();
+  unload_plugins();
   notify_uninit();
 
   g_object_unref(factory);
