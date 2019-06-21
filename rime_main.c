@@ -64,12 +64,14 @@ static void notification_handler(void* context_object,
   }
 }
 
+static int n_plugin_handles;
 static void **plugin_handles;
 static const char **plugin_modules;
 
 static int load_plugins(const char *config_file)
 {
   RimeConfig config = {0};
+  void **new_plugin_handles;
 
   if (!rime_api->config_open(config_file, &config)) {
     g_error("error loading settings for %s\n", config_file);
@@ -89,30 +91,39 @@ static int load_plugins(const char *config_file)
     rime_api->config_end(&iter);
   }
 
-  plugin_handles = malloc(sizeof(void *) * (n + 1));
-  if (!plugin_handles) {
+  // reserve space new plugins
+  new_plugin_handles = realloc(plugin_handles, sizeof(void *) * (n_plugin_handles + n));
+  if (new_plugin_handles) {
     return 2;
+  } else {
+    plugin_handles = new_plugin_handles;
   }
 
   plugin_modules = malloc(sizeof(const char *) * (m + 2));
   if (!plugin_modules) {
-    free(plugin_handles);
-    plugin_handles = NULL;
     return 3;
   }
 
-  n = 0;
+  n = n_plugin_handles;
   if (rime_api->config_begin_list(&iter, &config, "plugins")) {
     while(rime_api->config_next(&iter)) {
       const char *file = rime_api->config_get_cstring(&config, iter.path);
       if (file) {
         plugin_handles[n] = dlopen(file, RTLD_LAZY | RTLD_GLOBAL);
-        n++;
+        int k;
+        for (k = 0; k < n_plugin_handles; k++)
+          if (plugin_handles[k] == plugin_handles[n]) {
+            // already in plugin_handles, close
+            dlclose(plugin_handles[n]);
+            break;
+          }
+        if (k == n_plugin_handles)
+          n++;
       }
     }
     rime_api->config_end(&iter);
   }
-  plugin_handles[n] = NULL;
+  n_plugin_handles = n;
 
   m = 1;
   plugin_modules[0] = "default";
@@ -133,13 +144,15 @@ static int load_plugins(const char *config_file)
 
 static void unload_plugins() {
   if (plugin_handles) {
-    for (int i = 0; plugin_handles[i]; i++) {
+    for (int i = 0; i < n_plugin_handles; i++) {
       dlclose(plugin_handles[i]);
     }
     free(plugin_handles);
     plugin_handles = NULL;
   }
+}
 
+static void unload_modules() {
   if (plugin_modules) {
     for (int i = 1; plugin_modules[i]; i++) {
       free((void *) plugin_modules[i]);
@@ -183,7 +196,7 @@ void ibus_rime_start(gboolean full_check) {
   }
 
   // parse & load plugin modules
-  if (!load_plugins("ibus_rime")) {
+  if (load_plugins("ibus_rime") == 0) {
     rime_api->finalize();
     // second initialization
     ibus_rime_traits.modules = plugin_modules;
@@ -193,7 +206,7 @@ void ibus_rime_start(gboolean full_check) {
 
 void ibus_rime_stop() {
   rime_api->finalize();
-  unload_plugins();
+  unload_modules();
 }
 
 static void ibus_disconnect_cb(IBusBus *bus, gpointer user_data) {
@@ -238,6 +251,7 @@ static void rime_with_ibus() {
   ibus_main();
 
   ibus_rime_stop();
+  unload_plugins();
   notify_uninit();
 
   g_object_unref(factory);
