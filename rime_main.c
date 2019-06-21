@@ -93,7 +93,7 @@ static int load_plugins(const char *config_file)
 
   // reserve space new plugins
   new_plugin_handles = realloc(plugin_handles, sizeof(void *) * (n_plugin_handles + n));
-  if (new_plugin_handles) {
+  if (!new_plugin_handles) {
     return 2;
   } else {
     plugin_handles = new_plugin_handles;
