@@ -68,58 +68,57 @@ static int n_plugin_handles = 0;
 static void **plugin_handles;
 static const char **plugin_modules;
 
-static int load_plugins(const char *config_file)
-{
-  RimeConfig config = {0};
+static void load_plugins(RimeConfig *config) {
   void **new_plugin_handles;
 
-  if (!rime_api->config_open(config_file, &config)) {
-    g_error("error loading settings for %s\n", config_file);
-    return 1;
-  }
-
   // reserve space new plugins
-  int n = rime_api->config_list_size(&config, "plugins");
+  int n = rime_api->config_list_size(config, "plugins");
   new_plugin_handles = realloc(plugin_handles, sizeof(void *) * (n_plugin_handles + n));
   if (!new_plugin_handles) {
-    return 2;
+    return;
   } else {
     plugin_handles = new_plugin_handles;
   }
 
-  int m = rime_api->config_list_size(&config, "modules");
-  plugin_modules = malloc(sizeof(const char *) * (m + 2));
-  if (!plugin_modules) {
-    return 3;
-  }
-
   RimeConfigIterator iter;
   n = n_plugin_handles;
-  if (rime_api->config_begin_list(&iter, &config, "plugins")) {
+  if (rime_api->config_begin_list(&iter, config, "plugins")) {
     while(rime_api->config_next(&iter)) {
-      const char *file = rime_api->config_get_cstring(&config, iter.path);
+      const char *file = rime_api->config_get_cstring(config, iter.path);
       if (file) {
         plugin_handles[n] = dlopen(file, RTLD_LAZY | RTLD_GLOBAL);
-        int k;
-        for (k = 0; k < n_plugin_handles; k++)
-          if (plugin_handles[k] == plugin_handles[n]) {
-            // already in plugin_handles, close
-            dlclose(plugin_handles[n]);
-            break;
-          }
-        if (k == n_plugin_handles)
-          n++;
+        if (plugin_handles[n]) {
+          int k;
+          for (k = 0; k < n_plugin_handles; k++)
+            if (plugin_handles[k] == plugin_handles[n]) {
+              // already in plugin_handles, close
+              dlclose(plugin_handles[n]);
+              break;
+            }
+          if (k == n_plugin_handles)
+            n++;
+        }
       }
     }
     rime_api->config_end(&iter);
   }
   n_plugin_handles = n;
+  printf("n_plugin_handles = %d\n", n);
+}
 
+static void load_modules(RimeConfig *config) {
+  int m = rime_api->config_list_size(config, "modules");
+  plugin_modules = malloc(sizeof(const char *) * (m + 2));
+  if (!plugin_modules) {
+    return;
+  }
+
+  RimeConfigIterator iter;
   m = 1;
   plugin_modules[0] = "default";
-  if (rime_api->config_begin_list(&iter, &config, "modules")) {
+  if (rime_api->config_begin_list(&iter, config, "modules")) {
     while(rime_api->config_next(&iter)) {
-      const char *mod = rime_api->config_get_cstring(&config, iter.path);
+      const char *mod = rime_api->config_get_cstring(config, iter.path);
       if (mod) {
         plugin_modules[m] = strdup(mod);
         m++;
@@ -128,8 +127,21 @@ static int load_plugins(const char *config_file)
     rime_api->config_end(&iter);
   }
   plugin_modules[m] = NULL;
+}
 
-  return 0;
+static void load_plugins_modules(const char *config_file)
+{
+  RimeConfig config = {0};
+
+  if (!rime_api->config_open(config_file, &config)) {
+    g_error("error loading settings for %s\n", config_file);
+    return;
+  }
+
+  load_plugins(&config);
+  load_modules(&config);
+
+  rime_api->config_close(&config);
 }
 
 static void unload_plugins() {
@@ -178,17 +190,19 @@ void ibus_rime_start(gboolean full_check) {
   fill_traits(&ibus_rime_traits);
   ibus_rime_traits.user_data_dir = user_data_dir;
 
-  // first initialization
+  // first initialization (without extra modules)
   rime_api->initialize(&ibus_rime_traits);
   if (rime_api->start_maintenance((Bool)full_check)) {
     // update frontend config
     rime_api->deploy_config_file("ibus_rime.yaml", "config_version");
   }
 
-  // parse & load plugin modules
-  if (load_plugins("ibus_rime") == 0) {
+  // load plugins & modules
+  load_plugins_modules("ibus_rime");
+
+  // reinitialize if we have extra modules
+  if (plugin_modules) {
     rime_api->finalize();
-    // second initialization
     ibus_rime_traits.modules = plugin_modules;
     rime_api->initialize(&ibus_rime_traits);
   }
