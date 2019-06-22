@@ -64,7 +64,7 @@ static void notification_handler(void* context_object,
   }
 }
 
-static int n_plugin_handles;
+static int n_plugin_handles = 0;
 static void **plugin_handles;
 static const char **plugin_modules;
 
@@ -78,20 +78,8 @@ static int load_plugins(const char *config_file)
     return 1;
   }
 
-  RimeConfigIterator iter;
-  int n = 0;
-  if (rime_api->config_begin_list(&iter, &config, "plugins")) {
-    while(rime_api->config_next(&iter)) n++;
-    rime_api->config_end(&iter);
-  }
-
-  int m = 0;
-  if (rime_api->config_begin_list(&iter, &config, "modules")) {
-    while(rime_api->config_next(&iter)) m++;
-    rime_api->config_end(&iter);
-  }
-
   // reserve space new plugins
+  int n = rime_api->config_list_size(&config, "plugins");
   new_plugin_handles = realloc(plugin_handles, sizeof(void *) * (n_plugin_handles + n));
   if (!new_plugin_handles) {
     return 2;
@@ -99,11 +87,13 @@ static int load_plugins(const char *config_file)
     plugin_handles = new_plugin_handles;
   }
 
+  int m = rime_api->config_list_size(&config, "modules");
   plugin_modules = malloc(sizeof(const char *) * (m + 2));
   if (!plugin_modules) {
     return 3;
   }
 
+  RimeConfigIterator iter;
   n = n_plugin_handles;
   if (rime_api->config_begin_list(&iter, &config, "plugins")) {
     while(rime_api->config_next(&iter)) {
