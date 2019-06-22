@@ -103,7 +103,6 @@ static void load_plugins(RimeConfig *config) {
     rime_api->config_end(&iter);
   }
   n_plugin_handles = n;
-  printf("n_plugin_handles = %d\n", n);
 }
 
 static void load_modules(RimeConfig *config) {
