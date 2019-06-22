@@ -107,6 +107,10 @@ static void load_plugins(RimeConfig *config) {
 
 static void load_modules(RimeConfig *config) {
   int m = rime_api->config_list_size(config, "modules");
+  if (m == 0) {
+    return;
+  }
+
   plugin_modules = malloc(sizeof(const char *) * (m + 2));
   if (!plugin_modules) {
     return;
