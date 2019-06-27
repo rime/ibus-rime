@@ -481,9 +481,10 @@ static void ibus_rime_engine_property_activate (IBusEngine *engine,
                                                 guint prop_state)
 {
   extern void ibus_rime_start(gboolean full_check);
+  extern void ibus_rime_stop();
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
   if (!strcmp("deploy", prop_name)) {
-    rime_api->finalize();
+    ibus_rime_stop();
     ibus_rime_start(TRUE);
     ibus_rime_engine_update(rime_engine);
   }
