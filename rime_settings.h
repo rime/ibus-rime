@@ -20,7 +20,7 @@ struct IBusRimeSettings {
   struct ColorSchemeDefinition* color_scheme;
 };
 
-struct IBusRimeSettings g_ibus_rime_settings;
+extern struct IBusRimeSettings g_ibus_rime_settings;
 
 void
 ibus_rime_load_settings();
