@@ -503,10 +503,15 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
                                     guint       keycode,
                                     guint       modifiers)
 {
+  // ignore super key
+  if (modifiers & IBUS_SUPER_MASK) {
+    return FALSE;
+  }
+  
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
 
   modifiers &= (IBUS_RELEASE_MASK | IBUS_LOCK_MASK | IBUS_SHIFT_MASK |
-                IBUS_CONTROL_MASK | IBUS_MOD1_MASK | IBUS_SUPER_MASK);
+                IBUS_CONTROL_MASK | IBUS_MOD1_MASK);
 
   if (!rime_api->find_session(rime_engine->session_id)) {
     ibus_rime_create_session(rime_engine);
