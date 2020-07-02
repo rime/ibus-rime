@@ -458,6 +458,12 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
                                     guint       keycode,
                                     guint       modifiers)
 {
+  
+  // ignore super key
+  if (modifiers & IBUS_SUPER_MASK) {
+    return FALSE;
+  }
+  
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
 
   modifiers &= (IBUS_RELEASE_MASK | IBUS_LOCK_MASK | IBUS_SHIFT_MASK |
