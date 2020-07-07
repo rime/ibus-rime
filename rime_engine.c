@@ -362,14 +362,14 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
     }
   }
 
-  if (inline_text) {
+  if (inline_preedit) {
     ibus_engine_update_preedit_text(
         (IBusEngine *)rime_engine, text, 0, TRUE);
   }
   else {
     ibus_engine_hide_preedit_text((IBusEngine *)rime_engine);
   }
-  if (!inline_text && text) {
+  if (!inline_preedit && text) {
     ibus_engine_update_auxiliary_text((IBusEngine *)rime_engine, text, TRUE);
   }
   else {
