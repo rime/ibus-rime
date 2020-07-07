@@ -308,6 +308,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
   gboolean inline_preedit =
       g_ibus_rime_settings.embed_preedit_text && context.commit_text_preview;
   gboolean highlighting =
+      (g_ibus_rime_settings.color_scheme->color_scheme_id != NULL) &&
       (context.composition.sel_start < context.composition.sel_end);
   if (inline_preedit) {
     inline_text = ibus_text_new_from_string(context.commit_text_preview);
@@ -337,7 +338,8 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
               inline_text_len));
     }
     else {
-      offset = context.composition.length;  // hide auxiliary text
+        offset = context.composition.sel_start < context.composition.sel_end ?
+            context.composition.sel_start : context.composition.length;  // hide auxiliary text */
     }
   }
   if (offset < context.composition.length) {
@@ -362,12 +364,12 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
 
   if (inline_text) {
     ibus_engine_update_preedit_text(
-        (IBusEngine *)rime_engine, inline_text, inline_cursor_pos, TRUE);
+        (IBusEngine *)rime_engine, text, 0, TRUE);
   }
   else {
     ibus_engine_hide_preedit_text((IBusEngine *)rime_engine);
   }
-  if (text) {
+  if (!inline_text && text) {
     ibus_engine_update_auxiliary_text((IBusEngine *)rime_engine, text, TRUE);
   }
   else {
