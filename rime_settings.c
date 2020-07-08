@@ -6,15 +6,17 @@
 extern RimeApi *rime_api;
 
 static struct ColorSchemeDefinition preset_color_schemes[] = {
-  { NULL, 0, 0 },
+  { RIME_NONE_SCHEME, 0, 0 },
   { "aqua", 0xffffff, 0x0a3dfa },
   { "azure", 0xffffff, 0x0a3dea },
   { "ink", 0xffffff, 0x000000 },
-  { "luna", 0x000000, 0xffff7f }
+  { "luna", 0x000000, 0xffff7f },
+  { NULL, 0, 0 }
 };
 
 static struct IBusRimeSettings ibus_rime_settings_default = {
   FALSE,
+  PREVIEW,
   IBUS_ORIENTATION_SYSTEM,
   &preset_color_schemes[0],
 };
@@ -52,6 +54,12 @@ ibus_rime_load_settings()
   if (rime_api->config_get_bool(
           &config, "style/inline_preedit", &inline_preedit)) {
     g_ibus_rime_settings.embed_preedit_text = !!inline_preedit;
+  }
+
+  const char* preedit_style_str =
+    rime_api->config_get_cstring(&config, "style/preedit_style");
+  if(preedit_style_str && !strcmp(preedit_style_str, "composition")) {
+    g_ibus_rime_settings.preedit_style = COMPOSITION;
   }
 
   Bool horizontal = False;
