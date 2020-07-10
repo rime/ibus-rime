@@ -308,19 +308,19 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
   gint preedit_style =
       g_ibus_rime_settings.preedit_style;
   gboolean inline_preedit =
-      g_ibus_rime_settings.embed_preedit_text;
+      g_ibus_rime_settings.embed_preedit_text && context.commit_text_preview;
   gboolean highlighting =
       (strcmp(g_ibus_rime_settings.color_scheme->color_scheme_id, RIME_NONE_SCHEME)) &&
       (context.composition.sel_start < context.composition.sel_end);
-  if (context.commit_text_preview) {
+  if (inline_preedit) {
     inline_text = ibus_text_new_from_string(context.commit_text_preview);
     guint inline_text_len = ibus_text_get_length(inline_text);
     inline_text->attrs = ibus_attr_list_new();
-    if(inline_preedit && (preedit_style != PREVIEW)) {
+    if(preedit_style != PREVIEW) {
       ibus_attr_list_append(
         inline_text->attrs,
         ibus_attr_underline_new(
-            IBUS_ATTR_UNDERLINE_SINGLE, 0, inline_text_len));
+          IBUS_ATTR_UNDERLINE_SINGLE, 0, inline_text_len));
     }
     // hide converted range of auxiliary text if preedit is inline
     offset = context.composition.sel_start;
@@ -348,7 +348,7 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
   }
 
   if (offset < context.composition.length) {
-    if(inline_preedit && (preedit_style != PREVIEW)) { // COMPOSITION preedit style
+    if (inline_preedit && (preedit_style != PREVIEW)) { // COMPOSITION preedit style
       const char* preedit = context.composition.preedit;
       text = ibus_text_new_from_string(preedit);
       glong preedit_len = g_utf8_strlen(preedit, -1);
@@ -363,16 +363,6 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
         ibus_attr_list_append(
             text->attrs,
             ibus_attr_background_new(g_ibus_rime_settings.color_scheme->back_color, start, end));
-        /* if(end < preedit_len - 1) { */
-        /*   ibus_attr_list_append( */
-        /*     text->attrs, */
-        /*     ibus_attr_foreground_new(g_ibus_rime_settings.color_scheme->text_color, end, preedit_len)); */
-        /*     /1* ibus_attr_foreground_new(0xffffff - g_ibus_rime_settings.color_scheme->text_color, end, preedit_len)); *1/ */
-        /*   ibus_attr_list_append( */
-        /*     text->attrs, */
-        /*     ibus_attr_background_new(g_ibus_rime_settings.color_scheme->back_color, end, preedit_len)); */
-        /*     /1* ibus_attr_background_new(0xffffff - g_ibus_rime_settings.color_scheme->back_color, end, preedit_len)); *1/ */
-        /*   } */
       }
     }
     else {
@@ -397,18 +387,12 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
   }
 
   if (inline_preedit) {
-    if (context.commit_text_preview) {
-      if (preedit_style == PREVIEW) {
-        ibus_engine_update_preedit_text((IBusEngine *)rime_engine, inline_text, inline_cursor_pos, TRUE);
-        ibus_engine_update_auxiliary_text((IBusEngine *)rime_engine, text, TRUE);
-      } else {
-        ibus_engine_update_preedit_text((IBusEngine *)rime_engine, text, inline_cursor_pos, TRUE);
-        ibus_engine_hide_auxiliary_text((IBusEngine *)rime_engine);
-      }
-    }
-    else {
+    if (preedit_style == PREVIEW) {
+      ibus_engine_update_preedit_text((IBusEngine *)rime_engine, inline_text, inline_cursor_pos, TRUE);
       ibus_engine_update_auxiliary_text((IBusEngine *)rime_engine, text, TRUE);
-      ibus_engine_hide_preedit_text((IBusEngine *)rime_engine);
+    } else {
+      ibus_engine_update_preedit_text((IBusEngine *)rime_engine, text, inline_cursor_pos, TRUE);
+      ibus_engine_hide_auxiliary_text((IBusEngine *)rime_engine);
     }
   }
   else {

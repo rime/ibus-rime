@@ -10,8 +10,7 @@
 
 #define RIME_NONE_SCHEME "NONE"
 
-enum PreeditType
-{
+enum PreeditType {
     COMPOSITION,
     PREVIEW
 };
