@@ -172,7 +172,7 @@ static void fill_traits(RimeTraits *traits) {
   traits->distribution_name = DISTRIBUTION_NAME;
   traits->distribution_code_name = DISTRIBUTION_CODE_NAME;
   traits->distribution_version = DISTRIBUTION_VERSION;
-  traits->app_name = "ibus";
+  traits->app_name = "rime.ibus";
 }
 
 void ibus_rime_start(gboolean full_check) {
