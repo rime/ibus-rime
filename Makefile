@@ -28,11 +28,14 @@ install:
 	install -m 755 -d $(sharedir)/ibus-rime
 	install -m 755 -d $(sharedir)/ibus-rime/icons
 	install -m 644 -t $(sharedir)/ibus-rime/icons/ icons/*.png
+	install -m 755 -d $(sharedir)/rime-data
+	install -m 644 -t $(sharedir)/rime-data/ ibus_rime.yaml
 
 uninstall:
 	rm $(sharedir)/ibus/component/rime.xml
 	rm -R $(sharedir)/ibus-rime
 	rm -R $(libexecdir)/ibus-rime
+	rm $(sharedir)/rime-data/ibus_rime.yaml
 
 clean:
 	if  [ -e $(builddir) ]; then rm -R $(builddir); fi
