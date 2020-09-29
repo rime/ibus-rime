@@ -6,7 +6,7 @@ project home: [rime.im](https://rime.im)
 
 code repository: https://github.com/rime/ibus-rime
 
-license: GPLv3
+license: GPLv3-or-later
 
 ## installation
 
