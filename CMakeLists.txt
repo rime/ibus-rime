@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 
 option(BUILD_STATIC "Build Rime using static libraries" OFF)
 
+include(GNUInstallDirs)
+
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
@@ -46,3 +48,8 @@ endif(BUILD_STATIC)
 aux_source_directory(. IBUS_RIME_SRC)
 add_executable(ibus-engine-rime ${IBUS_RIME_SRC})
 target_link_libraries(ibus-engine-rime ${IBus_LIBRARIES} ${LIBNOTIFY_LIBRARIES} ${Rime_LIBRARIES} ${RIME_DEPS})
+
+install(FILES rime.xml DESTINATION "${CMAKE_INSTALL_DATADIR}/ibus/component")
+install(TARGETS ibus-engine-rime DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/ibus-rime")
+install(DIRECTORY icons DESTINATION "${CMAKE_INSTALL_DATADIR}/ibus-rime" FILES_MATCHING PATTERN "*.png")
+install(FILES ibus_rime.yaml DESTINATION "${CMAKE_INSTALL_DATADIR}/rime-data")
