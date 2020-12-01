@@ -24,10 +24,7 @@ install:
 	(cd $(builddir); make install)
 
 uninstall:
-	rm $(sharedir)/ibus/component/rime.xml
-	rm -R $(sharedir)/ibus-rime
-	rm -R $(libexecdir)/ibus-rime
-	rm $(sharedir)/rime-data/ibus_rime.yaml
+	(cd $(builddir); xargs rm < install_manifest.txt)
 
 clean:
 	if  [ -e $(builddir) ]; then rm -R $(builddir); fi
