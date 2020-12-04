@@ -3,7 +3,7 @@
 <component>
 	<name>im.rime.Rime</name>
 	<description>Rime Component</description>
-	<exec>/usr/lib/ibus-rime/ibus-engine-rime --ibus</exec>
+	<exec>@CMAKE_INSTALL_FULL_LIBEXECDIR@/ibus-rime/ibus-engine-rime --ibus</exec>
 	<version>1.0</version>
 	<author>GONG Chen &lt;chen.sst@gmail.com&gt;</author>
 	<license>GPL</license>
@@ -15,7 +15,7 @@
 			<language>zh</language>
 			<license>GPL</license>
 			<author>GONG Chen &lt;chen.sst@gmail.com&gt;</author>
-			<icon>/usr/share/ibus-rime/icons/rime.png</icon>
+			<icon>@CMAKE_INSTALL_FULL_DATADIR@/ibus-rime/icons/rime.png</icon>
 			<layout>default</layout>
 			<longname>Rime</longname>
 			<description>Rime Input Method Engine</description>
