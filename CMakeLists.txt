@@ -39,8 +39,6 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/rime_config.h"
   @ONLY)
 
-set(RIME_DEPS "dl")
-
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 if(BUILD_STATIC)
