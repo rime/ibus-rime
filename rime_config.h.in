@@ -1,9 +1,9 @@
 #ifndef RIME_CONFIG_H_
 #define RIME_CONFIG_H_
 
-#define RIME_VERSION "1.4.0"
+#define IBUS_RIME_VERSION "@ibus_rime_version@"
 
+#define IBUS_RIME_ICONS_DIR "@ibus_rime_icons_dir@"
 #define IBUS_RIME_SHARED_DATA_DIR "@RIME_DATA_DIR@"
-#define IBUS_RIME_ICONS_DIR "@IBUS_RIME_ICONS_DIR@"
 
 #endif  // RIME_CONFIG_H_

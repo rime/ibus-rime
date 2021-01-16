@@ -19,7 +19,7 @@
 
 #define DISTRIBUTION_NAME _("Rime")
 #define DISTRIBUTION_CODE_NAME "ibus-rime"
-#define DISTRIBUTION_VERSION RIME_VERSION
+#define DISTRIBUTION_VERSION IBUS_RIME_VERSION
 
 RimeApi *rime_api = NULL;
 
@@ -29,14 +29,6 @@ static const char* get_ibus_rime_user_data_dir(char *path) {
   strcat(path, "/.config/ibus/rime");
   return path;
 }
-
-static const char* get_ibus_rime_old_user_data_dir(char *path) {
-  const char* home = getenv("HOME");
-  strcpy(path, home);
-  strcat(path, "/.ibus/rime");
-  return path;
-}
-
 
 static void show_message(const char* summary, const char* details) {
   NotifyNotification* notice = notify_notification_new(summary, details, NULL);
@@ -177,16 +169,9 @@ static void fill_traits(RimeTraits *traits) {
 
 void ibus_rime_start(gboolean full_check) {
   char user_data_dir[512] = {0};
-  char old_user_data_dir[512] = {0};
   get_ibus_rime_user_data_dir(user_data_dir);
   if (!g_file_test(user_data_dir, G_FILE_TEST_IS_DIR)) {
-    get_ibus_rime_old_user_data_dir(old_user_data_dir);
-    if (g_file_test(old_user_data_dir, G_FILE_TEST_IS_DIR)) {
-      g_rename(old_user_data_dir, user_data_dir);
-    }
-    else {
-      g_mkdir_with_parents(user_data_dir, 0700);
-    }
+    g_mkdir_with_parents(user_data_dir, 0700);
   }
   rime_api->set_notification_handler(notification_handler, NULL);
   RIME_STRUCT(RimeTraits, ibus_rime_traits);

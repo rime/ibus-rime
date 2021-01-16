@@ -1,5 +1,7 @@
 project(ibus-rime)
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10)
+
+set(ibus_rime_version 1.4.0)
 
 option(BUILD_STATIC "Build Rime using static libraries" OFF)
 
@@ -65,4 +67,4 @@ configure_file(
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/rime.xml" DESTINATION "${CMAKE_INSTALL_DATADIR}/ibus/component")
 install(TARGETS ibus-engine-rime DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/ibus-rime")
 install(DIRECTORY icons DESTINATION "${CMAKE_INSTALL_DATADIR}/ibus-rime" FILES_MATCHING PATTERN "*.png")
-install(FILES ibus_rime.yaml DESTINATION "${CMAKE_INSTALL_DATADIR}/rime-data")
+install(FILES ibus_rime.yaml DESTINATION "${RIME_DATA_DIR}")
