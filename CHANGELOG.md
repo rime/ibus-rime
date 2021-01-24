@@ -1,3 +1,28 @@
+<a name="1.5.0"></a>
+## 1.5.0 (2021-01-24)
+
+
+#### Features
+
+* **ibus_rime.yaml:**  install config file for ibus-rime, set default UI style ([3325f833](3325f833))
+* **plugins:**  use librime's internal plugin loader ([b8a5c41c](b8a5c41c))
+* **rime_settings:**  add config options: style/preedit_style, style/cursor_type ([cfa7bce2](cfa7bce2), closes [#102](102))
+* **submodules:**  migrate to rime/plum ([5808a2b1](5808a2b1))
+
+#### Breaking Changes
+
+* **plugins:**  use librime's internal plugin loader ([b8a5c41c](b8a5c41c))
+
+#### Bug Fixes
+
+* **CMakeLists.txt:**  static build requires boost_locale and icuuc ([570a27b5](570a27b5))
+* **logging:**  wrong log file name ([61f85083](61f85083))
+* **rime_engine:**  ignore keys with super modifier ([33b2755f](33b2755f))
+* **rime_main.cc:**  deploy ibus_rime.yaml on maintenance ([8e081264](8e081264))
+* **rime_settings.h:**  compile with gcc 10 ([25ad5b56](25ad5b56), closes [#90](90))
+
+
+
 <a name="1.4.0"></a>
 ## 1.4.0 (2019-01-28)
 
