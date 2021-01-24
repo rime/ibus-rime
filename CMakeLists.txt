@@ -33,7 +33,7 @@ endif(NOT DEFINED RIME_DATA_DIR)
 message(STATUS "Precompiler macro RIME_DATA_DIR is set to \"${RIME_DATA_DIR}\"")
 add_definitions(-DRIME_DATA_DIR="${RIME_DATA_DIR}")
 
-set(IBUS_RIME_ICONS_DIR "${CMAKE_INSTALL_FULL_DATADIR}/ibus-rime/icons")
+set(ibus_rime_icons_dir "${CMAKE_INSTALL_FULL_DATADIR}/ibus-rime/icons")
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/rime_config.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/rime_config.h"
