@@ -53,6 +53,23 @@ if(BUILD_STATIC)
       libglog.a libleveldb.a libmarisa.a libopencc.a libyaml-cpp.a)
 endif(BUILD_STATIC)
 
+# configure debug mode and asan
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose Release or Debug" FORCE)
+endif ()
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  if (NOT CMAKE_DEBUG_ASAN)
+    set(CMAKE_C_FLAGS_RELEASE "")
+    set(CMAKE_C_FLAGS_DEBUG "-O0  -Wall -g -ggdb3")
+    set(CMAKE_C_FLAGS "-O0 -Wall -g -ggdb3")
+  else ()
+    set(CMAKE_C_FLAGS_RELEASE "")
+    set(CMAKE_C_FLAGS_DEBUG "-O0 -fsanitize=undefined,address -Wall -g -ggdb3")
+    set(CMAKE_C_FLAGS "-O0 -fsanitize=undefined,address -Wall -g -ggdb3")
+  endif ()
+endif ()
+
 aux_source_directory(. IBUS_RIME_SRC)
 add_executable(ibus-engine-rime ${IBUS_RIME_SRC})
 target_link_libraries(ibus-engine-rime ${IBus_LIBRARIES} ${LIBNOTIFY_LIBRARIES} ${Rime_LIBRARIES} ${RIME_DEPS})
