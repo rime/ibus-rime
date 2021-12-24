@@ -5,19 +5,19 @@ sudo apt-get install opencc libnotify4
 
 cd $(dirname $0)
 echo 'installing files...'
-sudo install -m 755 -t /usr/bin/ usr/bin/*
-sudo install -m 644 -t /usr/include/ usr/include/rime_api.h
-sudo install -m 644 -t /usr/lib/ usr/lib/librime.a
-sudo install -m 755 -d /usr/lib/ibus-rime/
-sudo install -m 755 -t /usr/lib/ibus-rime/ usr/lib/ibus-rime/ibus-engine-rime
-sudo install -m 644 -t /usr/lib/pkgconfig/ usr/lib/pkgconfig/rime.pc
-sudo install -m 755 -d /usr/share/cmake/rime/
-sudo install -m 644 -t /usr/share/cmake/rime/ usr/share/cmake/rime/RimeConfig.cmake
-sudo install -m 644 -t /usr/share/ibus/component/ usr/share/ibus/component/rime.xml
-sudo install -m 755 -d /usr/share/ibus-rime/icons/
-sudo install -m 644 -t /usr/share/ibus-rime/icons/ usr/share/ibus-rime/icons/*
-sudo install -m 755 -d /usr/share/rime-data/
-sudo install -m 644 -t /usr/share/rime-data/ usr/share/rime-data/*
+sudo install -m 0755 -t /usr/bin/ usr/bin/*
+sudo install -m 0644 -t /usr/include/ usr/include/rime_api.h
+sudo install -m 0644 -t /usr/lib/ usr/lib/librime.a
+sudo install -m 0755 -d /usr/lib/ibus-rime/
+sudo install -m 0755 -t /usr/lib/ibus-rime/ usr/lib/ibus-rime/ibus-engine-rime
+sudo install -m 0644 -t /usr/lib/pkgconfig/ usr/lib/pkgconfig/rime.pc
+sudo install -m 0755 -d /usr/share/cmake/rime/
+sudo install -m 0644 -t /usr/share/cmake/rime/ usr/share/cmake/rime/RimeConfig.cmake
+sudo install -m 0644 -t /usr/share/ibus/component/ usr/share/ibus/component/rime.xml
+sudo install -m 0755 -d /usr/share/ibus-rime/icons/
+sudo install -m 0644 -t /usr/share/ibus-rime/icons/ usr/share/ibus-rime/icons/*
+sudo install -m 0755 -d /usr/share/rime-data/
+sudo install -m 0644 -t /usr/share/rime-data/ usr/share/rime-data/*
 echo 'done.'
 
 ibus-daemon -drxR

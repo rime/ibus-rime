@@ -24,5 +24,5 @@ PATH=$PKGDIR/usr/bin:$PATH
 echo 'building ibus-rime...'
 make clean && make ibus-engine-rime-static && make DESTDIR=$PKGDIR install || exit 1
 
-install -m 755 package/binpkg-install $PKGDIR/INSTALL
+install -m 0755 package/binpkg-install $PKGDIR/INSTALL
 echo 'binpkg built:' $PKGDIR

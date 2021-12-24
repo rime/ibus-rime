@@ -212,7 +212,7 @@ static void
 ibus_rime_engine_disable (IBusEngine *engine)
 {
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
-  if (rime_engine->session_id) {
+  if (engine->enabled && !rime_engine->status.is_disabled && rime_engine->session_id) {
     rime_api->destroy_session(rime_engine->session_id);
     rime_engine->session_id = 0;
   }
@@ -507,7 +507,7 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
   if (modifiers & IBUS_SUPER_MASK) {
     return FALSE;
   }
-  
+
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
 
   modifiers &= (IBUS_RELEASE_MASK | IBUS_LOCK_MASK | IBUS_SHIFT_MASK |
