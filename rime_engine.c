@@ -503,8 +503,8 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
                                     guint       keycode,
                                     guint       modifiers)
 {
-  // ignore super key
-  if (modifiers & IBUS_SUPER_MASK) {
+  // ignore super key, @see ibus_engine_filter_key_event
+  if (modifiers & (IBUS_SUPER_MASK | IBUS_MOD4_MASK)) {
     return FALSE;
   }
   
