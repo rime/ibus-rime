@@ -201,6 +201,15 @@ ibus_rime_engine_focus_out (IBusEngine *engine)
 static void
 ibus_rime_engine_reset (IBusEngine *engine)
 {
+  IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
+
+  if (rime_engine->session_id) {
+    rime_api->clear_composition(rime_engine->session_id);
+    // Clear uncommited contents of the pre-edit buffer.
+    ibus_engine_update_preedit_text_with_mode(
+        engine, ibus_text_new_from_static_string(""), 0, FALSE, IBUS_ENGINE_PREEDIT_CLEAR);
+    ibus_rime_engine_update(rime_engine);
+  }
 }
 
 static void
