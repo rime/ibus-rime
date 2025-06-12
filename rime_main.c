@@ -81,7 +81,9 @@ void ibus_rime_start(gboolean full_check) {
 }
 
 void ibus_rime_stop() {
-  rime_api->finalize();
+  if (rime_api) {
+    rime_api->finalize();
+  }
 }
 
 static void ibus_disconnect_cb(IBusBus *bus, gpointer user_data) {
@@ -134,11 +136,8 @@ static void rime_with_ibus() {
 }
 
 static void sigterm_cb(int sig) {
-  if (rime_api) {
-    ibus_rime_stop();
-  }
-  notify_uninit();
-  exit(EXIT_FAILURE);
+  // Notify the main program to exit.
+  ibus_quit();
 }
 
 int main(gint argc, gchar** argv) {
