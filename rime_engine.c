@@ -95,6 +95,9 @@ ibus_rime_create_session (IBusRimeEngine *rime_engine)
       g_ibus_rime_settings.preedit_style == PREEDIT_STYLE_COMPOSITION &&
       g_ibus_rime_settings.cursor_type == CURSOR_TYPE_INSERT;
   rime_api->set_option(rime_engine->session_id, "soft_cursor", !inline_caret);
+  // Define arrow key actions in the selector component.
+  Bool horizontal = g_ibus_rime_settings.lookup_table_orientation == IBUS_ORIENTATION_HORIZONTAL;
+  rime_api->set_option(rime_engine->session_id, "_horizontal", horizontal);
 }
 
 static void
