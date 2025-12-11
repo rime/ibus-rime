@@ -432,7 +432,8 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
   }
 
   ibus_lookup_table_clear(rime_engine->table);
-  if (context.menu.num_candidates) {
+  if (context.menu.num_candidates &&
+    !rime_api->get_option(rime_engine->session_id, "_hide_candidate")) {
     int i;
     int num_select_keys =
         context.menu.select_keys ? strlen(context.menu.select_keys) : 0;
