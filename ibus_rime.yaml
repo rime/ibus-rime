@@ -4,7 +4,7 @@ config_version: '1.0'
 
 style:
   # candidate list orientation (false|true).
-  horizontal: false
+  horizontal: true
 
   # embed preedit text in the input field (false|true).
   inline_preedit: true
