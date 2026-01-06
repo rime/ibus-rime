@@ -1,3 +1,19 @@
+<a name="1.6.0"></a>
+# 1.6.0 (2026-01-06)
+
+
+### Bug Fixes
+
+* **cmake:** call cmake_minimum_required() piror to project() ([#198](https://github.com/rime/ibus-rime/issues/198)) ([4edca6d](https://github.com/rime/ibus-rime/commit/4edca6d))
+* **rime_main:** Adjust the sigterm_cb processing logic ([#205](https://github.com/rime/ibus-rime/issues/205)) ([4218655](https://github.com/rime/ibus-rime/commit/4218655))
+
+
+### Features
+
+* **rime_engine:** change candidate selection horizontally ([dc5a9a1](https://github.com/rime/ibus-rime/commit/dc5a9a1))
+
+
+
 <a name="1.5.1"></a>
 ### 1.5.1 (2024-12-29)
 

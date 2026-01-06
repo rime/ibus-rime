@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(ibus-rime)
 
-set(ibus_rime_version 1.5.1)
+set(ibus_rime_version 1.6.0)
 
 option(BUILD_STATIC "Build Rime using static libraries" OFF)
 
