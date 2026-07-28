@@ -10,6 +10,9 @@ include(GNUInstallDirs)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
+
+find_package(Gettext REQUIRED)
+
 pkg_check_modules(IBus REQUIRED ibus-1.0)
 if(IBus_FOUND)
   include_directories(${IBus_INCLUDE_DIRS})
@@ -66,3 +69,25 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/rime.xml" DESTINATION "${CMAKE_INSTAL
 install(TARGETS ibus-engine-rime DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/ibus-rime")
 install(DIRECTORY icons DESTINATION "${CMAKE_INSTALL_DATADIR}/ibus-rime" FILES_MATCHING PATTERN "*.png")
 install(FILES ibus_rime.yaml DESTINATION "${RIME_DATA_DIR}")
+
+set(PO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/po")
+file(GLOB PO_FILES CONFIGURE_DEPENDS "${PO_DIR}/*.po")
+set(MO_FILES)
+foreach(PO_FILE ${PO_FILES})
+  get_filename_component(LANG ${PO_FILE} NAME_WE)
+  set(MO_DIR "${CMAKE_CURRENT_BINARY_DIR}/locale/${LANG}/LC_MESSAGES")
+  set(MO_FILE "${MO_DIR}/ibus-rime.mo")
+  add_custom_command( 
+    OUTPUT ${MO_FILE}
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${MO_DIR}"
+    COMMAND "${MSGFMT_EXECUTABLE}" -o "${MO_FILE}" "${PO_FILE}" DEPENDS "${PO_FILE}"
+    COMMENT "Compiling translation ${LANG}"
+    VERBATIM
+  )
+  list(APPEND MO_FILES "${MO_FILE}")
+  install(FILES "${MO_FILE}" DESTINATION "${CMAKE_INSTALL_LOCALEDIR}/${LANG}/LC_MESSAGES")
+endforeach()
+
+if(MO_FILES)
+  add_custom_target(translations ALL DEPENDS ${MO_FILES})
+endif()

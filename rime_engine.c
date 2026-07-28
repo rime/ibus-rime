@@ -4,9 +4,6 @@
 #include "rime_engine.h"
 #include "rime_settings.h"
 
-// TODO:
-#define _(x) (x)
-
 extern RimeApi *rime_api;
 
 typedef struct _IBusRimeEngine IBusRimeEngine;
@@ -114,7 +111,7 @@ ibus_rime_engine_init (IBusRimeEngine *rime_engine)
   IBusProperty* prop;
   IBusText* label;
   IBusText* tips;
-  label = ibus_text_new_from_static_string("中文");
+  label = ibus_text_new_from_static_string(_("Chinese"));
   tips = ibus_text_new_from_static_string("中 ↔ A");
   prop = ibus_property_new("InputMode",
                            PROP_TYPE_NORMAL,
@@ -126,7 +123,7 @@ ibus_rime_engine_init (IBusRimeEngine *rime_engine)
                            PROP_STATE_UNCHECKED,
                            NULL);
   ibus_prop_list_append(rime_engine->props, prop);
-  label = ibus_text_new_from_static_string("部署");
+  label = ibus_text_new_from_static_string(_("Deploy"));
   tips = ibus_text_new_from_static_string(_("Deploy"));
   prop = ibus_property_new("deploy",
                            PROP_TYPE_NORMAL,
@@ -138,7 +135,7 @@ ibus_rime_engine_init (IBusRimeEngine *rime_engine)
                            PROP_STATE_UNCHECKED,
                            NULL);
   ibus_prop_list_append(rime_engine->props, prop);
-  label = ibus_text_new_from_static_string("同步");
+  label = ibus_text_new_from_static_string(_("Sync"));
   tips = ibus_text_new_from_static_string(_("Sync data"));
   prop = ibus_property_new("sync",
                            PROP_TYPE_NORMAL,
@@ -253,7 +250,7 @@ static void ibus_rime_update_status(IBusRimeEngine *rime_engine,
   if (prop) {
     if (!status || status->is_disabled) {
       icon = IBUS_RIME_ICONS_DIR "/disabled.png";
-      label = ibus_text_new_from_static_string("維護");
+      label = ibus_text_new_from_static_string(_("Maintenance"));
     }
     else if (status->is_ascii_mode) {
       icon = IBUS_RIME_ICONS_DIR "/abc.png";
@@ -266,7 +263,7 @@ static void ibus_rime_update_status(IBusRimeEngine *rime_engine,
         label = ibus_text_new_from_string(status->schema_name);
       }
       else {
-        label = ibus_text_new_from_static_string("中文");
+        label = ibus_text_new_from_static_string(_("Chinese"));
       }
     }
     if (status && !status->is_disabled && ibus_text_get_length(label) > 0) {
