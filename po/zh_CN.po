@@ -43,7 +43,7 @@ msgstr "Rime"
 
 #: rime_main.c:42
 msgid "Rime is under maintenance ..."
-msgstr "Rime 正在维护中……"
+msgstr "Rime 正在维护……"
 
 #: rime_main.c:45
 msgid "Rime is ready."
