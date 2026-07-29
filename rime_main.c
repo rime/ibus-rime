@@ -12,9 +12,7 @@
 #include <rime_api.h>
 #include "rime_engine.h"
 #include "rime_settings.h"
-
-// TODO:
-#define _(x) (x)
+#include <locale.h>
 
 #define DISTRIBUTION_NAME _("Rime")
 #define DISTRIBUTION_CODE_NAME "ibus-rime"
@@ -141,6 +139,9 @@ static void sigterm_cb(int sig) {
 }
 
 int main(gint argc, gchar** argv) {
+  setlocale(LC_ALL, "");
+  bindtextdomain(GETTEXT_PACKAGE, IBUS_RIME_LOCALEDIR);
+
   signal(SIGTERM, sigterm_cb);
   signal(SIGINT, sigterm_cb);
 

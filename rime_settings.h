@@ -2,6 +2,10 @@
 #define __IBUS_RIME_SETTINGS_H__
 
 #include <ibus.h>
+#include <libintl.h>
+
+#define GETTEXT_PACKAGE "ibus-rime"
+#define _(x) dgettext(GETTEXT_PACKAGE, x)
 
 // colors
 #define RIME_COLOR_LIGHT  0xd4d4d4

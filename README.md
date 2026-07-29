@@ -15,6 +15,7 @@ Refer to https://github.com/rime/home/wiki/RimeWithIBus
 build dependencies:
 
   - pkg-config
+  - gettext
   - cmake>=3.10
   - librime>=1.0 (development package)
   - libibus-1.0 (development package)
