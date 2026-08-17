@@ -428,15 +428,17 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
   if (context.composition.length == 0) {
     ibus_engine_hide_preedit_text((IBusEngine *)rime_engine);
     ibus_engine_hide_lookup_table((IBusEngine *)rime_engine);
-    // 空闲时，在光标附近显示中/英状态提示（仅在按键或光标定位后激活）
-    if (skip_hint) {
-      // toggle key pressed; mode has not settled yet, keep current hint as-is
-    }
-    else if (rime_engine->status_hint_active) {
-      ibus_rime_engine_render_status_hint(rime_engine);
-    }
-    else {
-      ibus_engine_hide_auxiliary_text((IBusEngine *)rime_engine);
+    if (g_ibus_rime_settings.status_hint) {
+      // 空闲时，在光标附近显示中/英状态提示（仅在按键或光标定位后激活）
+      if (skip_hint) {
+        // toggle key pressed; mode has not settled yet, keep current hint as-is
+      }
+      else if (rime_engine->status_hint_active) {
+        ibus_rime_engine_render_status_hint(rime_engine);
+      }
+      else {
+        ibus_engine_hide_auxiliary_text((IBusEngine *)rime_engine);
+      }
     }
     rime_api->free_context(&context);
     return;
