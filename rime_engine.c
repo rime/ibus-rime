@@ -17,6 +17,9 @@ struct _IBusRimeEngine {
   RimeStatus status;
   IBusLookupTable* table;
   IBusPropList* props;
+  gboolean status_hint_active;
+  gboolean skip_hint_render_once;
+  guint hide_timer_id;
 };
 
 struct _IBusRimeEngineClass {
@@ -36,11 +39,11 @@ static void ibus_rime_engine_focus_out (IBusEngine *engine);
 static void ibus_rime_engine_reset (IBusEngine *engine);
 static void ibus_rime_engine_enable (IBusEngine *engine);
 static void ibus_rime_engine_disable (IBusEngine *engine);
-static void ibus_engine_set_cursor_location (IBusEngine *engine,
-                                             gint x,
-                                             gint y,
-                                             gint w,
-                                             gint h);
+static void ibus_rime_engine_set_cursor_location (IBusEngine *engine,
+                                                  gint x,
+                                                  gint y,
+                                                  gint w,
+                                                  gint h);
 static void ibus_rime_engine_set_capabilities (IBusEngine *engine,
                                                guint caps);
 static void ibus_rime_engine_page_up (IBusEngine *engine);
@@ -60,6 +63,8 @@ static void ibus_rime_engine_property_hide (IBusEngine *engine,
                                             const gchar *prop_name);
 
 static void ibus_rime_engine_update (IBusRimeEngine *rime_engine);
+static void ibus_rime_engine_arm_status_hint_hide (IBusRimeEngine *rime_engine);
+static void ibus_rime_engine_cancel_status_hint_hide (IBusRimeEngine *rime_engine);
 
 G_DEFINE_TYPE (IBusRimeEngine, ibus_rime_engine, IBUS_TYPE_ENGINE)
 
@@ -77,6 +82,7 @@ ibus_rime_engine_class_init (IBusRimeEngineClass *klass)
   engine_class->reset = ibus_rime_engine_reset;
   engine_class->enable = ibus_rime_engine_enable;
   engine_class->disable = ibus_rime_engine_disable;
+  engine_class->set_cursor_location = ibus_rime_engine_set_cursor_location;
   engine_class->property_activate = ibus_rime_engine_property_activate;
   engine_class->candidate_clicked = ibus_rime_engine_candidate_clicked;
   engine_class->page_up = ibus_rime_engine_page_up;
@@ -101,6 +107,10 @@ ibus_rime_engine_init (IBusRimeEngine *rime_engine)
 
   RIME_STRUCT_INIT(RimeStatus, rime_engine->status);
   RIME_STRUCT_CLEAR(rime_engine->status);
+
+  rime_engine->status_hint_active = FALSE;
+  rime_engine->skip_hint_render_once = FALSE;
+  rime_engine->hide_timer_id = 0;
 
   rime_engine->table = ibus_lookup_table_new(9, 0, TRUE, FALSE);
   g_object_ref_sink(rime_engine->table);
@@ -152,6 +162,11 @@ ibus_rime_engine_init (IBusRimeEngine *rime_engine)
 static void
 ibus_rime_engine_destroy (IBusRimeEngine *rime_engine)
 {
+  if (rime_engine->hide_timer_id) {
+    g_source_remove(rime_engine->hide_timer_id);
+    rime_engine->hide_timer_id = 0;
+  }
+
   if (rime_engine->session_id) {
     rime_api->destroy_session(rime_engine->session_id);
     rime_engine->session_id = 0;
@@ -183,6 +198,7 @@ static void
 ibus_rime_engine_focus_in (IBusEngine *engine)
 {
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
+  rime_engine->status_hint_active = FALSE;
   ibus_engine_register_properties(engine, rime_engine->props);
   if (!rime_engine->session_id) {
     ibus_rime_create_session(rime_engine);
@@ -193,6 +209,15 @@ ibus_rime_engine_focus_in (IBusEngine *engine)
 static void
 ibus_rime_engine_focus_out (IBusEngine *engine)
 {
+  IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
+  if (rime_engine->hide_timer_id) {
+    g_source_remove(rime_engine->hide_timer_id);
+    rime_engine->hide_timer_id = 0;
+  }
+  rime_engine->status_hint_active = FALSE;
+  ibus_engine_hide_preedit_text(engine);
+  ibus_engine_hide_auxiliary_text(engine);
+  ibus_engine_hide_lookup_table(engine);
 }
 
 static void
@@ -218,6 +243,9 @@ static void
 ibus_rime_engine_disable (IBusEngine *engine)
 {
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
+  ibus_rime_engine_cancel_status_hint_hide(rime_engine);
+  rime_engine->status_hint_active = FALSE;
+  ibus_engine_hide_auxiliary_text(engine);
   if (rime_engine->session_id) {
     rime_api->destroy_session(rime_engine->session_id);
     rime_engine->session_id = 0;
@@ -277,8 +305,95 @@ static void ibus_rime_update_status(IBusRimeEngine *rime_engine,
   }
 }
 
+static void
+ibus_rime_engine_set_cursor_location (IBusEngine *engine,
+                                      gint x,
+                                      gint y,
+                                      gint w,
+                                      gint h)
+{
+  IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
+  rime_engine->status_hint_active = TRUE;
+  ibus_rime_engine_update(rime_engine);
+}
+
+#define RIME_STATUS_HINT_TIMEOUT_MS 2000
+
+static gboolean
+ibus_rime_engine_hide_status_hint (gpointer user_data)
+{
+  IBusRimeEngine *rime_engine = (IBusRimeEngine *)user_data;
+  rime_engine->hide_timer_id = 0;
+  ibus_engine_hide_auxiliary_text((IBusEngine *)rime_engine);
+  return G_SOURCE_REMOVE;
+}
+
+static void
+ibus_rime_engine_arm_status_hint_hide (IBusRimeEngine *rime_engine)
+{
+  if (rime_engine->hide_timer_id) {
+    g_source_remove(rime_engine->hide_timer_id);
+  }
+  rime_engine->hide_timer_id = g_timeout_add(
+      RIME_STATUS_HINT_TIMEOUT_MS, ibus_rime_engine_hide_status_hint, rime_engine);
+}
+
+static void
+ibus_rime_engine_cancel_status_hint_hide (IBusRimeEngine *rime_engine)
+{
+  if (rime_engine->hide_timer_id) {
+    g_source_remove(rime_engine->hide_timer_id);
+    rime_engine->hide_timer_id = 0;
+  }
+}
+
+static gboolean
+ibus_rime_engine_is_toggle_key (guint keyval)
+{
+  // Shift/Ctrl/Alt/Super toggle ascii mode on key RELEASE (see ascii_composer).
+  // Rendering the hint on their PRESS would show the stale mode, so we suppress
+  // it there and render on release instead. Caps Lock toggles on press and is
+  // intentionally not listed here.
+  switch (keyval) {
+    case 0xffe1:  /* Shift_L */
+    case 0xffe2:  /* Shift_R */
+    case 0xffe3:  /* Control_L */
+    case 0xffe4:  /* Control_R */
+    case 0xffe9:  /* Alt_L */
+    case 0xffea:  /* Alt_R */
+    case 0xffeb:  /* Super_L */
+    case 0xffec:  /* Super_R */
+      return TRUE;
+    default:
+      return FALSE;
+  }
+}
+
+static void
+ibus_rime_engine_render_status_hint (IBusRimeEngine *rime_engine)
+{
+  if (!rime_engine->status_hint_active || !rime_engine->session_id) {
+    return;
+  }
+
+  RIME_STRUCT(RimeStatus, status);
+  if (rime_api->get_status(rime_engine->session_id, &status)) {
+    rime_engine->status.is_ascii_mode = status.is_ascii_mode;
+    rime_api->free_status(&status);
+  }
+
+  IBusText* mode_text = ibus_text_new_from_static_string(
+      rime_engine->status.is_ascii_mode ? "en" : "中");
+  ibus_engine_update_auxiliary_text((IBusEngine *)rime_engine, mode_text, TRUE);
+  ibus_rime_engine_arm_status_hint_hide(rime_engine);
+}
+
 static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
 {
+  // one-shot suppression for toggle-key press (see process_key_event)
+  const gboolean skip_hint = rime_engine->skip_hint_render_once;
+  rime_engine->skip_hint_render_once = FALSE;
+
   // update properties
   RIME_STRUCT(RimeStatus, status);
   if (rime_api->get_status(rime_engine->session_id, &status)) {
@@ -302,14 +417,32 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
   // begin updating UI
 
   RIME_STRUCT(RimeContext, context);
-  if (!rime_api->get_context(rime_engine->session_id, &context) ||
-      context.composition.length == 0) {
+  if (!rime_api->get_context(rime_engine->session_id, &context)) {
     ibus_engine_hide_preedit_text((IBusEngine *)rime_engine);
     ibus_engine_hide_auxiliary_text((IBusEngine *)rime_engine);
     ibus_engine_hide_lookup_table((IBusEngine *)rime_engine);
     rime_api->free_context(&context);
     return;
   }
+
+  if (context.composition.length == 0) {
+    ibus_engine_hide_preedit_text((IBusEngine *)rime_engine);
+    ibus_engine_hide_lookup_table((IBusEngine *)rime_engine);
+    // 空闲时，在光标附近显示中/英状态提示（仅在按键或光标定位后激活）
+    if (skip_hint) {
+      // toggle key pressed; mode has not settled yet, keep current hint as-is
+    }
+    else if (rime_engine->status_hint_active) {
+      ibus_rime_engine_render_status_hint(rime_engine);
+    }
+    else {
+      ibus_engine_hide_auxiliary_text((IBusEngine *)rime_engine);
+    }
+    rime_api->free_context(&context);
+    return;
+  }
+
+  ibus_rime_engine_cancel_status_hint_hide(rime_engine);
 
   IBusText* inline_text = NULL;
   IBusText* auxiliary_text = NULL;
@@ -532,6 +665,16 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
                     IBUS_ORIENTATION_HORIZONTAL;
   if (rime_api->get_option(rime_engine->session_id, "_horizontal") != horizontal) {
     rime_api->set_option(rime_engine->session_id, "_horizontal", horizontal);
+  }
+
+  const gboolean is_release = (modifiers & IBUS_RELEASE_MASK) != 0;
+  if (ibus_rime_engine_is_toggle_key(keyval) && !is_release) {
+    // toggle key pressed; ascii mode flips on release, so hold off rendering
+    // the hint until then to avoid flashing the previous mode.
+    rime_engine->skip_hint_render_once = TRUE;
+  }
+  else {
+    rime_engine->status_hint_active = TRUE;
   }
 
   gboolean result =
