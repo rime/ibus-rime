@@ -33,6 +33,7 @@ struct IBusRimeSettings {
   gint preedit_style;
   gint cursor_type;
   gint lookup_table_orientation;
+  gboolean status_hint;
   struct ColorSchemeDefinition* color_scheme;
 };
 
