@@ -5,26 +5,29 @@
 
 extern RimeApi *rime_api;
 
+// GLib timeout callback: auto-hide the hint once the display delay elapses.
 static gboolean
 hint_timer_cb (gpointer user_data)
 {
   IBusRimeStatusHint *hint = user_data;
-  g_clear_handle_id(&hint->timer_id, g_source_remove);
-  ibus_engine_hide_auxiliary_text(hint->engine);
+  ibus_rime_status_hint_dismiss(hint, hint->engine);
   return G_SOURCE_REMOVE;
 }
 
 void
 ibus_rime_status_hint_dismiss (IBusRimeStatusHint *hint, IBusEngine *engine)
 {
+  if (!hint->timer_id) {
+    return;
+  }
   g_clear_handle_id(&hint->timer_id, g_source_remove);
   ibus_engine_hide_auxiliary_text(engine);
 }
 
 gboolean
 ibus_rime_status_hint_show (IBusRimeStatusHint *hint,
-                             IBusEngine         *engine,
-                             RimeSessionId       session_id)
+                             IBusEngine        *engine,
+                             RimeSessionId      session_id)
 {
   if (!hint->pending) {
     return FALSE;

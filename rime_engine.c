@@ -154,6 +154,7 @@ ibus_rime_engine_init (IBusRimeEngine *rime_engine)
 static void
 ibus_rime_engine_destroy (IBusRimeEngine *rime_engine)
 {
+  // clear timer handle to avoid use‑after‑free.
   g_clear_handle_id(&rime_engine->hint.timer_id, g_source_remove);
 
   if (rime_engine->session_id) {
@@ -197,6 +198,7 @@ ibus_rime_engine_focus_in (IBusEngine *engine)
 static void
 ibus_rime_engine_focus_out (IBusEngine *engine)
 {
+  // dismiss status hint on focus-out
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
   ibus_rime_status_hint_dismiss(&rime_engine->hint, engine);
 }
@@ -224,6 +226,7 @@ static void
 ibus_rime_engine_disable (IBusEngine *engine)
 {
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
+  // dismiss status hint on disable.
   ibus_rime_status_hint_dismiss(&rime_engine->hint, engine);
   if (rime_engine->session_id) {
     rime_api->destroy_session(rime_engine->session_id);
@@ -290,7 +293,6 @@ static void ibus_rime_update_status(IBusRimeEngine *rime_engine,
   }
 }
 
-
 static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
 {
   // update properties
@@ -319,6 +321,8 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
   if (!rime_api->get_context(rime_engine->session_id, &context) ||
       context.composition.length == 0) {
     ibus_engine_hide_preedit_text((IBusEngine *)rime_engine);
+    // Case 1: no composition — hide preedit/candidates, then show the mode hint
+    // if a change is pending; otherwise clear any leftover auxiliary text.
     if (!ibus_rime_status_hint_show(&rime_engine->hint, (IBusEngine *)rime_engine,
                                      rime_engine->session_id) &&
         !rime_engine->hint.timer_id) {
@@ -328,7 +332,8 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
     rime_api->free_context(&context);
     return;
   }
-
+  // Case 2: composition in progress — cancel the hint timer only;
+  // the composition below takes over the auxiliary text.
   g_clear_handle_id(&rime_engine->hint.timer_id, g_source_remove);
 
   IBusText* inline_text = NULL;
@@ -549,7 +554,7 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
 
   // Any real input key (keyvals below the modifier range 0xffe1..0xffef)
   // dismisses the status hint immediately so it doesn't trail the caret.
-  if (keyval < 0xffe1 && rime_engine->hint.timer_id) {
+  if (keyval < 0xffe1) {
     ibus_rime_status_hint_dismiss(&rime_engine->hint, engine);
   }
 
