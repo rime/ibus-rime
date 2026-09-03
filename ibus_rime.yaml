@@ -1,6 +1,6 @@
 # ibus-rime configuration
 
-config_version: '1.0'
+config_version: '1.7'
 
 style:
   # candidate list orientation (false|true).
@@ -17,7 +17,9 @@ style:
 
   # `cursor_type` specifies where the inline cursor is located.
   # inline cursor is at the insertion point.
-  #cursor_type: insert
+  cursor_type: insert
   # inline cursor is at the beginning of text under conversion.
-  cursor_type: select
+  #cursor_type: select
 
+  # display updated IME status at cursor position.
+  status_hint: true
