@@ -3,6 +3,7 @@
 #include <rime_api.h>
 #include "rime_engine.h"
 #include "rime_settings.h"
+#include "status_hint.h"
 
 extern RimeApi *rime_api;
 
@@ -17,6 +18,7 @@ struct _IBusRimeEngine {
   RimeStatus status;
   IBusLookupTable* table;
   IBusPropList* props;
+  IBusRimeStatusHint hint;
 };
 
 struct _IBusRimeEngineClass {
@@ -152,6 +154,9 @@ ibus_rime_engine_init (IBusRimeEngine *rime_engine)
 static void
 ibus_rime_engine_destroy (IBusRimeEngine *rime_engine)
 {
+  // clear timer handle to avoid use‑after‑free.
+  g_clear_handle_id(&rime_engine->hint.timer_id, g_source_remove);
+
   if (rime_engine->session_id) {
     rime_api->destroy_session(rime_engine->session_id);
     rime_engine->session_id = 0;
@@ -193,6 +198,9 @@ ibus_rime_engine_focus_in (IBusEngine *engine)
 static void
 ibus_rime_engine_focus_out (IBusEngine *engine)
 {
+  // dismiss status hint on focus-out
+  IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
+  ibus_rime_status_hint_dismiss(&rime_engine->hint, engine);
 }
 
 static void
@@ -218,6 +226,8 @@ static void
 ibus_rime_engine_disable (IBusEngine *engine)
 {
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
+  // dismiss status hint on disable.
+  ibus_rime_status_hint_dismiss(&rime_engine->hint, engine);
   if (rime_engine->session_id) {
     rime_api->destroy_session(rime_engine->session_id);
     rime_engine->session_id = 0;
@@ -234,6 +244,12 @@ static void ibus_rime_update_status(IBusRimeEngine *rime_engine,
       !strcmp(rime_engine->status.schema_id, status->schema_id)) {
     // no updates
     return;
+  }
+
+  // schema_id is NULL until the first status arrives; don't hint on startup.
+  if (status && rime_engine->status.schema_id &&
+      rime_engine->status.is_ascii_mode != status->is_ascii_mode) {
+    rime_engine->hint.pending = TRUE;
   }
 
   rime_engine->status.is_disabled = status ? status->is_disabled : False;
@@ -305,11 +321,20 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
   if (!rime_api->get_context(rime_engine->session_id, &context) ||
       context.composition.length == 0) {
     ibus_engine_hide_preedit_text((IBusEngine *)rime_engine);
-    ibus_engine_hide_auxiliary_text((IBusEngine *)rime_engine);
+    // Case 1: no composition — hide preedit/candidates, then show the mode hint
+    // if a change is pending; otherwise clear any leftover auxiliary text.
+    if (!ibus_rime_status_hint_show(&rime_engine->hint, (IBusEngine *)rime_engine,
+                                     rime_engine->session_id) &&
+        !rime_engine->hint.timer_id) {
+      ibus_engine_hide_auxiliary_text((IBusEngine *)rime_engine);
+    }
     ibus_engine_hide_lookup_table((IBusEngine *)rime_engine);
     rime_api->free_context(&context);
     return;
   }
+  // Case 2: composition in progress — cancel the hint timer only;
+  // the composition below takes over the auxiliary text.
+  g_clear_handle_id(&rime_engine->hint.timer_id, g_source_remove);
 
   IBusText* inline_text = NULL;
   IBusText* auxiliary_text = NULL;
@@ -525,6 +550,12 @@ ibus_rime_engine_process_key_event (IBusEngine *engine,
   if (!rime_engine->session_id) {  // service disabled
     ibus_rime_engine_update(rime_engine);
     return FALSE;
+  }
+
+  // Any real input key (keyvals below the modifier range 0xffe1..0xffef)
+  // dismisses the status hint immediately so it doesn't trail the caret.
+  if (keyval < 0xffe1) {
+    ibus_rime_status_hint_dismiss(&rime_engine->hint, engine);
   }
 
   // Arrow key actions respect candidate list orientation.

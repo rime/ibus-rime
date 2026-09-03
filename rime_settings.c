@@ -18,6 +18,7 @@ static struct IBusRimeSettings ibus_rime_settings_default = {
   .preedit_style = PREEDIT_STYLE_COMPOSITION,
   .cursor_type = CURSOR_TYPE_INSERT,
   .lookup_table_orientation = IBUS_ORIENTATION_SYSTEM,
+  .status_hint = FALSE,
   .color_scheme = NULL,
 };
 
@@ -80,6 +81,11 @@ ibus_rime_load_settings()
   if (rime_api->config_get_bool(&config, "style/horizontal", &horizontal)) {
     g_ibus_rime_settings.lookup_table_orientation =
       horizontal ? IBUS_ORIENTATION_HORIZONTAL : IBUS_ORIENTATION_VERTICAL;
+  }
+
+  Bool status_hint = False;
+  if (rime_api->config_get_bool(&config, "style/status_hint", &status_hint)) {
+    g_ibus_rime_settings.status_hint = !!status_hint;
   }
 
   const char* color_scheme =
