@@ -424,7 +424,14 @@ static void ibus_rime_engine_update(IBusRimeEngine *rime_engine)
     ibus_engine_update_preedit_text(
         (IBusEngine *)rime_engine, inline_text, inline_cursor_pos, TRUE);
   } else {
-    ibus_engine_hide_preedit_text((IBusEngine *)rime_engine);
+    // send 0-length preedit to force cursor update dnd align the candidate panel
+    if (context.composition.length > 0) {
+      IBusText *empty = ibus_text_new_from_static_string("");
+      ibus_engine_update_preedit_text(
+          (IBusEngine *)rime_engine, empty, 0, TRUE);
+    } else {
+      ibus_engine_hide_preedit_text((IBusEngine *)rime_engine);
+    }
   }
   if (auxiliary_text) {
     ibus_engine_update_auxiliary_text(
