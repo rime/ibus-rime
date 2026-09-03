@@ -80,7 +80,7 @@ foreach(PO_FILE ${PO_FILES})
   add_custom_command( 
     OUTPUT ${MO_FILE}
     COMMAND ${CMAKE_COMMAND} -E make_directory "${MO_DIR}"
-    COMMAND "${MSGFMT_EXECUTABLE}" -o "${MO_FILE}" "${PO_FILE}" DEPENDS "${PO_FILE}"
+    COMMAND "${GETTEXT_MSGFMT_EXECUTABLE}" -o "${MO_FILE}" "${PO_FILE}" DEPENDS "${PO_FILE}"
     COMMENT "Compiling translation ${LANG}"
     VERBATIM
   )
