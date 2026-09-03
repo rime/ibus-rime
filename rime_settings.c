@@ -5,40 +5,15 @@
 
 extern RimeApi *rime_api;
 
-static struct ColorSchemeDefinition preset_color_schemes[] = {
-  { "aqua", 0xffffff, 0x0a3dfa },
-  { "azure", 0xffffff, 0x0a3dea },
-  { "ink", 0xffffff, 0x000000 },
-  { "luna", 0x000000, 0xffff7f },
-  { NULL, 0, 0 }
-};
-
 static struct IBusRimeSettings ibus_rime_settings_default = {
   .embed_preedit_text = TRUE,
   .preedit_style = PREEDIT_STYLE_COMPOSITION,
   .cursor_type = CURSOR_TYPE_INSERT,
   .lookup_table_orientation = IBUS_ORIENTATION_SYSTEM,
   .status_hint = FALSE,
-  .color_scheme = NULL,
 };
 
 struct IBusRimeSettings g_ibus_rime_settings;
-
-static void
-select_color_scheme(struct IBusRimeSettings* settings,
-		    const char* color_scheme_id)
-{
-  struct ColorSchemeDefinition* c;
-  for (c = preset_color_schemes; c->color_scheme_id; ++c) {
-    if (!strcmp(c->color_scheme_id, color_scheme_id)) {
-      settings->color_scheme = c;
-      g_debug("selected color scheme: %s", color_scheme_id);
-      return;
-    }
-  }
-  // fallback to default
-  settings->color_scheme = NULL;
-}
 
 void
 ibus_rime_load_settings()
@@ -86,12 +61,6 @@ ibus_rime_load_settings()
   Bool status_hint = False;
   if (rime_api->config_get_bool(&config, "style/status_hint", &status_hint)) {
     g_ibus_rime_settings.status_hint = !!status_hint;
-  }
-
-  const char* color_scheme =
-    rime_api->config_get_cstring(&config, "style/color_scheme");
-  if (color_scheme) {
-    select_color_scheme(&g_ibus_rime_settings, color_scheme);
   }
 
   rime_api->config_close(&config);

@@ -22,19 +22,12 @@ enum CursorType {
   CURSOR_TYPE_SELECT,
 };
 
-struct ColorSchemeDefinition {
-  const char* color_scheme_id;
-  int text_color;
-  int back_color;
-};
-
 struct IBusRimeSettings {
   gboolean embed_preedit_text;
   gint preedit_style;
   gint cursor_type;
   gint lookup_table_orientation;
   gboolean status_hint;
-  struct ColorSchemeDefinition* color_scheme;
 };
 
 extern struct IBusRimeSettings g_ibus_rime_settings;

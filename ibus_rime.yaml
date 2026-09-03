@@ -21,8 +21,3 @@ style:
   # inline cursor is at the beginning of text under conversion.
   cursor_type: select
 
-  # built-in color schemes for highlighting the portion of inline preedit text
-  # that needs focus. (null|aqua|azure|ink|luna)
-  # by default highlighting color is not used.
-  color_scheme: ~
-  # color_scheme: aqua
