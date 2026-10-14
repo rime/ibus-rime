@@ -23,3 +23,36 @@ style:
 
   # display updated IME status at cursor position.
   status_hint: true
+
+# Per-application style overrides, keyed by the client name reported
+# by ibus-daemon (the `client` argument of focus_in_id, ibus >= 1.5.27).
+# Unspecified options fall back to the global `style` section.
+#
+# Tip: run `G_MESSAGES_DEBUG=all /usr/libexec/ibus-engine-rime 2>&1 | grep -i focus`
+# to inspect the actual client name reported by each application.
+app_options:
+  # === Qt applications ===
+  # WPS Office, QQ Music, DingTalk, WeChat, Telegram etc. report this.
+  # Many Qt apps fail to render the inline preedit (WPS shows no pinyin),
+  # so display it in the candidate window instead.
+  QIBusInputContext:
+    style:
+      inline_preedit: false
+
+  # === GTK applications ===
+  # Client names may vary across ibus / gtk versions.
+  # Common identifiers (uncomment to apply):
+  # IBusInputContext:           # GTK2 apps, Firefox, Thunderbird
+  #   inline_preedit: true
+  # gtk-im-context-ibus:        # GTK3/GTK4 apps (Nautilus, gedit...)
+  #   inline_preedit: true
+
+  # === Electron / Chromium applications ===
+  # VSCode, Chrome, Edge, Obsidian, Discord etc. usually report "IBusInputContext".
+  # If inline preedit behaves oddly in the browser text area, try disabling it:
+  # IBusInputContext:
+  #   inline_preedit: false
+
+  # === Other known clients (examples only) ===
+  # xterm:                       # XIM / xterm
+  #   inline_preedit: false

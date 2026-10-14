@@ -89,6 +89,51 @@ static void ibus_disconnect_cb(IBusBus *bus, gpointer user_data) {
   ibus_quit();
 }
 
+typedef struct _IBusRimeFactory IBusRimeFactory;
+typedef struct _IBusRimeFactoryClass IBusRimeFactoryClass;
+
+struct _IBusRimeFactory {
+  IBusFactory parent;
+};
+
+struct _IBusRimeFactoryClass {
+  IBusFactoryClass parent;
+};
+
+G_DEFINE_TYPE (IBusRimeFactory, ibus_rime_factory, IBUS_TYPE_FACTORY)
+#define IBUS_TYPE_RIME_FACTORY (ibus_rime_factory_get_type())
+
+static IBusEngine *
+ibus_rime_factory_create_engine (IBusFactory *factory,
+                                 const gchar *engine_name)
+{
+  static guint engine_id = 0;
+  gchar *object_path = g_strdup_printf("/org/freedesktop/IBus/Engine/%d",
+                                       ++engine_id);
+  IBusEngine *engine = (IBusEngine *) g_object_new (IBUS_TYPE_RIME_ENGINE,
+      "engine-name", engine_name,
+      "object-path", object_path,
+      "connection", ibus_service_get_connection((IBusService *)factory),
+#if IBUS_CHECK_VERSION (1, 5, 27)
+      "has-focus-id", TRUE,
+#endif
+      NULL);
+  g_free(object_path);
+  return engine;
+}
+
+static void
+ibus_rime_factory_class_init (IBusRimeFactoryClass *klass)
+{
+  IBusFactoryClass *factory_class = IBUS_FACTORY_CLASS (klass);
+  factory_class->create_engine = ibus_rime_factory_create_engine;
+}
+
+static void
+ibus_rime_factory_init (IBusRimeFactory *factory)
+{
+}
+
 static void rime_with_ibus() {
   ibus_init();
   IBusBus *bus = ibus_bus_new();
@@ -101,10 +146,12 @@ static void rime_with_ibus() {
 
   g_signal_connect(bus, "disconnected", G_CALLBACK(ibus_disconnect_cb), NULL);
 
-  IBusFactory *factory = ibus_factory_new(ibus_bus_get_connection(bus));
+  IBusFactory *factory =
+      g_object_new (IBUS_TYPE_RIME_FACTORY,
+                    "object-path", IBUS_PATH_FACTORY,
+                    "connection", ibus_bus_get_connection(bus),
+                    NULL);
   g_object_ref_sink(factory);
-
-  ibus_factory_add_engine(factory, "rime", IBUS_TYPE_RIME_ENGINE);
   if (!ibus_bus_request_name(bus, "im.rime.Rime", 0)) {
     g_error("error requesting bus name");
     exit(1);

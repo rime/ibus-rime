@@ -35,4 +35,7 @@ extern struct IBusRimeSettings g_ibus_rime_settings;
 void
 ibus_rime_load_settings();
 
+void
+ibus_rime_apply_app_options(const gchar *client);
+
 #endif

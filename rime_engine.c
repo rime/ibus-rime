@@ -19,6 +19,7 @@ struct _IBusRimeEngine {
   IBusLookupTable* table;
   IBusPropList* props;
   IBusRimeStatusHint hint;
+  gchar *client;
 };
 
 struct _IBusRimeEngineClass {
@@ -35,6 +36,13 @@ static gboolean ibus_rime_engine_process_key_event (IBusEngine *engine,
                                                     guint modifiers);
 static void ibus_rime_engine_focus_in (IBusEngine *engine);
 static void ibus_rime_engine_focus_out (IBusEngine *engine);
+#if IBUS_CHECK_VERSION (1, 5, 27)
+static void ibus_rime_engine_focus_in_id (IBusEngine *engine,
+                                          const gchar *object_path,
+                                          const gchar *client);
+static void ibus_rime_engine_focus_out_id (IBusEngine *engine,
+                                           const gchar *object_path);
+#endif
 static void ibus_rime_engine_reset (IBusEngine *engine);
 static void ibus_rime_engine_enable (IBusEngine *engine);
 static void ibus_rime_engine_disable (IBusEngine *engine);
@@ -76,6 +84,10 @@ ibus_rime_engine_class_init (IBusRimeEngineClass *klass)
   engine_class->process_key_event = ibus_rime_engine_process_key_event;
   engine_class->focus_in = ibus_rime_engine_focus_in;
   engine_class->focus_out = ibus_rime_engine_focus_out;
+#if IBUS_CHECK_VERSION (1, 5, 27)
+  engine_class->focus_in_id = ibus_rime_engine_focus_in_id;
+  engine_class->focus_out_id = ibus_rime_engine_focus_out_id;
+#endif
   engine_class->reset = ibus_rime_engine_reset;
   engine_class->enable = ibus_rime_engine_enable;
   engine_class->disable = ibus_rime_engine_disable;
@@ -86,14 +98,22 @@ ibus_rime_engine_class_init (IBusRimeEngineClass *klass)
 }
 
 static void
-ibus_rime_create_session (IBusRimeEngine *rime_engine)
+ibus_rime_update_soft_cursor (IBusRimeEngine *rime_engine)
 {
-  rime_engine->session_id = rime_api->create_session();
   Bool inline_caret =
       g_ibus_rime_settings.embed_preedit_text &&
       g_ibus_rime_settings.preedit_style == PREEDIT_STYLE_COMPOSITION &&
       g_ibus_rime_settings.cursor_type == CURSOR_TYPE_INSERT;
-  rime_api->set_option(rime_engine->session_id, "soft_cursor", !inline_caret);
+  if (rime_engine->session_id) {
+    rime_api->set_option(rime_engine->session_id, "soft_cursor", !inline_caret);
+  }
+}
+
+static void
+ibus_rime_create_session (IBusRimeEngine *rime_engine)
+{
+  rime_engine->session_id = rime_api->create_session();
+  ibus_rime_update_soft_cursor(rime_engine);
 }
 
 static void
@@ -156,6 +176,7 @@ ibus_rime_engine_destroy (IBusRimeEngine *rime_engine)
 {
   // clear timer handle to avoid use‑after‑free.
   g_clear_handle_id(&rime_engine->hint.timer_id, g_source_remove);
+  g_clear_pointer(&rime_engine->client, g_free);
 
   if (rime_engine->session_id) {
     rime_api->destroy_session(rime_engine->session_id);
@@ -202,6 +223,35 @@ ibus_rime_engine_focus_out (IBusEngine *engine)
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
   ibus_rime_status_hint_dismiss(&rime_engine->hint, engine);
 }
+
+static void
+ibus_rime_engine_apply_app_options (IBusRimeEngine *rime_engine,
+                                    const gchar *client)
+{
+  g_clear_pointer(&rime_engine->client, g_free);
+  rime_engine->client = g_strdup(client);
+  ibus_rime_apply_app_options(client);
+  ibus_rime_update_soft_cursor(rime_engine);
+}
+
+#if IBUS_CHECK_VERSION (1, 5, 27)
+static void
+ibus_rime_engine_focus_in_id (IBusEngine *engine,
+                              const gchar *object_path,
+                              const gchar *client)
+{
+  ibus_rime_engine_apply_app_options((IBusRimeEngine *)engine, client);
+  ibus_rime_engine_focus_in(engine);
+}
+
+static void
+ibus_rime_engine_focus_out_id (IBusEngine *engine,
+                               const gchar *object_path)
+{
+  ibus_rime_engine_apply_app_options((IBusRimeEngine *)engine, NULL);
+  ibus_rime_engine_focus_out(engine);
+}
+#endif
 
 static void
 ibus_rime_engine_reset (IBusEngine *engine)
