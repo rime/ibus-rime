@@ -89,6 +89,34 @@ static void ibus_disconnect_cb(IBusBus *bus, gpointer user_data) {
   ibus_quit();
 }
 
+// Create the engine with has-focus-id set, so that the daemon reports which
+// input context gains and loses focus (FocusInId/FocusOutId) instead of only
+// that *something* was focused. The engine needs that identity to end the
+// composition when the focus moves to another input field, and not to mistake
+// a repeated focus of the same context for a focus change.
+static IBusEngine *
+create_engine_cb (IBusFactory *factory, const gchar *engine_name,
+                  gpointer user_data)
+{
+  static guint id = 0;
+  gchar *object_path;
+  IBusEngine *engine;
+
+  if (g_strcmp0(engine_name, "rime") != 0) {
+    return NULL;
+  }
+  object_path = g_strdup_printf("/org/freedesktop/IBus/Engine/Rime/%u", ++id);
+  engine = g_object_new(IBUS_TYPE_RIME_ENGINE,
+                        "engine-name", engine_name,
+                        "object-path", object_path,
+                        "connection",
+                        ibus_service_get_connection(IBUS_SERVICE(factory)),
+                        "has-focus-id", TRUE,
+                        NULL);
+  g_free(object_path);
+  return engine;
+}
+
 static void rime_with_ibus() {
   ibus_init();
   IBusBus *bus = ibus_bus_new();
@@ -105,6 +133,8 @@ static void rime_with_ibus() {
   g_object_ref_sink(factory);
 
   ibus_factory_add_engine(factory, "rime", IBUS_TYPE_RIME_ENGINE);
+  g_signal_connect(factory, "create-engine",
+                   G_CALLBACK(create_engine_cb), NULL);
   if (!ibus_bus_request_name(bus, "im.rime.Rime", 0)) {
     g_error("error requesting bus name");
     exit(1);

@@ -19,6 +19,8 @@ struct _IBusRimeEngine {
   IBusLookupTable* table;
   IBusPropList* props;
   IBusRimeStatusHint hint;
+  /* object path of the input context we are composing in */
+  gchar* focused_context;
 };
 
 struct _IBusRimeEngineClass {
@@ -35,6 +37,11 @@ static gboolean ibus_rime_engine_process_key_event (IBusEngine *engine,
                                                     guint modifiers);
 static void ibus_rime_engine_focus_in (IBusEngine *engine);
 static void ibus_rime_engine_focus_out (IBusEngine *engine);
+static void ibus_rime_engine_focus_in_id (IBusEngine *engine,
+                                          const gchar *object_path,
+                                          const gchar *client);
+static void ibus_rime_engine_focus_out_id (IBusEngine *engine,
+                                           const gchar *object_path);
 static void ibus_rime_engine_reset (IBusEngine *engine);
 static void ibus_rime_engine_enable (IBusEngine *engine);
 static void ibus_rime_engine_disable (IBusEngine *engine);
@@ -76,6 +83,8 @@ ibus_rime_engine_class_init (IBusRimeEngineClass *klass)
   engine_class->process_key_event = ibus_rime_engine_process_key_event;
   engine_class->focus_in = ibus_rime_engine_focus_in;
   engine_class->focus_out = ibus_rime_engine_focus_out;
+  engine_class->focus_in_id = ibus_rime_engine_focus_in_id;
+  engine_class->focus_out_id = ibus_rime_engine_focus_out_id;
   engine_class->reset = ibus_rime_engine_reset;
   engine_class->enable = ibus_rime_engine_enable;
   engine_class->disable = ibus_rime_engine_disable;
@@ -170,6 +179,8 @@ ibus_rime_engine_destroy (IBusRimeEngine *rime_engine)
   }
   RIME_STRUCT_CLEAR(rime_engine->status);
 
+  g_clear_pointer(&rime_engine->focused_context, g_free);
+
   if (rime_engine->table) {
     g_object_unref(rime_engine->table);
     rime_engine->table = NULL;
@@ -182,6 +193,25 @@ ibus_rime_engine_destroy (IBusRimeEngine *rime_engine)
 
   ((IBusObjectClass *) ibus_rime_engine_parent_class)->destroy(
       (IBusObject *)rime_engine);
+}
+
+// Take back everything this client is showing for the composition: the
+// pre-edit it holds, the candidate window and the auxiliary line. The input
+// buffer is discarded as well, since nothing will be committed for it once the
+// client that was being composed into is gone.
+static void
+ibus_rime_engine_discard_composition (IBusRimeEngine *rime_engine)
+{
+  IBusEngine *engine = (IBusEngine *)rime_engine;
+
+  if (rime_engine->session_id) {
+    rime_api->clear_composition(rime_engine->session_id);
+  }
+  ibus_engine_update_preedit_text_with_mode(
+      engine, ibus_text_new_from_static_string(""), 0, FALSE,
+      IBUS_ENGINE_PREEDIT_CLEAR);
+  ibus_engine_hide_lookup_table(engine);
+  ibus_engine_hide_auxiliary_text(engine);
 }
 
 static void
@@ -198,9 +228,50 @@ ibus_rime_engine_focus_in (IBusEngine *engine)
 static void
 ibus_rime_engine_focus_out (IBusEngine *engine)
 {
-  // dismiss status hint on focus-out
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
+
+  // dismiss status hint on focus-out
   ibus_rime_status_hint_dismiss(&rime_engine->hint, engine);
+  // End the composition instead of carrying it into the next client. Clients
+  // restart their own pre-edit state when they gain focus, so a composition
+  // that outlives the switch is drawn there as if it had been typed in that
+  // input field, and its text is committed to whoever receives the focus next.
+  ibus_rime_engine_discard_composition(rime_engine);
+}
+
+static void
+ibus_rime_engine_focus_in_id (IBusEngine *engine,
+                              const gchar *object_path,
+                              const gchar *client)
+{
+  IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
+
+  // The daemon may focus the same input context again, e.g. when it negotiates
+  // the client identity, and also after every commit some toolkits reset the
+  // context. Re-entering the context we are already composing in must not be
+  // treated as a focus change.
+  if (rime_engine->focused_context &&
+      !g_strcmp0(rime_engine->focused_context, object_path)) {
+    return;
+  }
+  g_free(rime_engine->focused_context);
+  rime_engine->focused_context = g_strdup(object_path);
+  ibus_rime_engine_focus_in(engine);
+}
+
+static void
+ibus_rime_engine_focus_out_id (IBusEngine *engine,
+                               const gchar *object_path)
+{
+  IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
+
+  // Only the input context we are composing in owns what is on screen; another
+  // one losing focus says nothing about the composition.
+  if (g_strcmp0(rime_engine->focused_context, object_path) != 0) {
+    return;
+  }
+  g_clear_pointer(&rime_engine->focused_context, g_free);
+  ibus_rime_engine_focus_out(engine);
 }
 
 static void
@@ -209,10 +280,7 @@ ibus_rime_engine_reset (IBusEngine *engine)
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
 
   if (rime_engine->session_id) {
-    rime_api->clear_composition(rime_engine->session_id);
-    // Clear uncommited contents of the pre-edit buffer.
-    ibus_engine_update_preedit_text_with_mode(
-        engine, ibus_text_new_from_static_string(""), 0, FALSE, IBUS_ENGINE_PREEDIT_CLEAR);
+    ibus_rime_engine_discard_composition(rime_engine);
     ibus_rime_engine_update(rime_engine);
   }
 }
@@ -226,8 +294,12 @@ static void
 ibus_rime_engine_disable (IBusEngine *engine)
 {
   IBusRimeEngine *rime_engine = (IBusRimeEngine *)engine;
-  // dismiss status hint on disable.
-  ibus_rime_status_hint_dismiss(&rime_engine->hint, engine);
+
+  // Switching to another input method is a focus-out for everything we drew:
+  // leave no half-typed composition behind in the client, and dismiss the
+  // status hint.
+  ibus_rime_engine_focus_out(engine);
+  g_clear_pointer(&rime_engine->focused_context, g_free);
   if (rime_engine->session_id) {
     rime_api->destroy_session(rime_engine->session_id);
     rime_engine->session_id = 0;
